@@ -37,6 +37,13 @@ Route::get('/home', [PageController::class, 'home']);
 Route::get('/products', [PageController::class, 'index']);
 Route::get('/products/{id}', [PageController::class, 'detailProduct']);
 
+ Route::prefix('service')->group(function () {
+        Route::get('/', [ServiceController::class, 'index']);
+        Route::get('/kecamatan', [ServiceController::class, 'getKecamatan']);
+        Route::get('/kelurahan/{kecamatan_id}', [ServiceController::class, 'getKelurahans']);
+        Route::get('/bengkel/{id}', [ServiceController::class, 'detailBengkel']);
+    });
+
 // ✅ Authenticated
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', fn(Request $request) => $request->user());
@@ -168,12 +175,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/add', [CartController::class, 'add']);
         Route::put('/{id}', [CartController::class, 'update']);
         Route::delete('/{id}', [CartController::class, 'destroy']);
-    });
-
-    Route::prefix('service')->group(function () {
-        Route::get('/', [ServiceController::class, 'index']);
-        Route::get('/kelurahan/{kecamatan_id}', [ServiceController::class, 'getKelurahans']);
-        Route::get('/bengkel/{id}', [ServiceController::class, 'detailBengkel']);
     });
 });
 

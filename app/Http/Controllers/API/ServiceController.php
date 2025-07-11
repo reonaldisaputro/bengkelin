@@ -47,6 +47,12 @@ class ServiceController extends Controller
         return ResponseFormatter::success($bengkels, 'Data bengkel berhasil diambil.');
     }
 
+    public function getKecamatan()
+    {
+        $kecamatans = Kecamatan::all();
+        return ResponseFormatter::success($kecamatans, 'Data kecamatan berhasil diambil.');
+    }
+
     public function getKelurahans($kecamatan_id)
     {
         $kelurahans = Kelurahan::where('kecamatan_id', $kecamatan_id)->get();
