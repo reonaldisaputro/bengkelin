@@ -91,6 +91,28 @@ class AuthController extends Controller
         ], 'Login successful');
     }
 
+    public function loginOwner(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $owner = PemilikBengkel::where('email', $request->email)->first();
+
+        if (! $owner || ! Hash::check($request->password, $owner->password)) {
+            return ResponseFormatter::error(null, 'Invalid credentials', 401);
+        }
+
+        $token = $owner->createToken('auth_token')->plainTextToken;
+
+        return ResponseFormatter::success([
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'owner' => $owner,
+        ], 'Login owner successful');
+    }
+
     public function logout(Request $request)
     {
         $request->user()->currentAccessToken()->delete();

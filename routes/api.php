@@ -31,6 +31,7 @@ use App\Http\Controllers\API\WithdrawRequestController;
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/register-owner', [AuthController::class, 'registerOwner']);
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/login-owner', [AuthController::class, 'loginOwner']);
 Route::post('/midtrans-callback', [CheckoutController::class, 'callback']);
 Route::post('/chatbot', [ChatbotController::class, 'handle']);
 Route::get('/home', [PageController::class, 'home']);
