@@ -119,4 +119,9 @@ class AuthController extends Controller
 
         return ResponseFormatter::success(null, 'Logged out successfully');
     }
+
+    public function fetch(Request $request)
+    {
+        return ResponseFormatter::success($request->user(), 'Data profile user berhasil diambil');
+    }
 }

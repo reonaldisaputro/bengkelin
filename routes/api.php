@@ -47,7 +47,7 @@ Route::get('/products/{id}', [PageController::class, 'detailProduct']);
 
 // ✅ Authenticated
 Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', fn(Request $request) => $request->user());
+    Route::get('/user', [AuthController::class, 'fetch']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/checkout', [CheckoutController::class, 'checkout']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
