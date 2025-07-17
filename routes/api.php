@@ -64,7 +64,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/layanans/{id}', [LayananController::class, 'update']);
     Route::delete('/layanans/{id}', [LayananController::class, 'destroy']);
 
-    Route::get('/products', [ProductController::class, 'index']);
     Route::post('/products', [ProductController::class, 'store']);
     Route::get('/products/{id}', [ProductController::class, 'show']);
     Route::put('/products/{id}', [ProductController::class, 'update']);
