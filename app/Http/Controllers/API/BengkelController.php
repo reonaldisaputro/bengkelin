@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Api;
+namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Bengkel;
@@ -14,6 +14,12 @@ use App\Helpers\ResponseFormatter;
 
 class BengkelController extends Controller
 {
+    public function all()
+    {
+        $bengkels = Bengkel::with(['specialists', 'kecamatan', 'kelurahan'])->get();
+        return ResponseFormatter::success($bengkels, 'Daftar semua bengkel berhasil diambil');
+    }
+
     // GET /api/bengkel
     public function index()
     {

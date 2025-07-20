@@ -7,7 +7,7 @@ use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AdminPencairanController;
 use App\Http\Controllers\Api\BengkelBookingController;
-use App\Http\Controllers\Api\BengkelController;
+use App\Http\Controllers\API\BengkelController;
 use App\Http\Controllers\Api\BengkelTransactionController;
 use App\Http\Controllers\Api\BookingController;
 use App\Http\Controllers\API\CartController;
@@ -43,6 +43,36 @@ Route::get('/products/{id}', [PageController::class, 'detailProduct']);
         Route::get('/kecamatan', [ServiceController::class, 'getKecamatan']);
         Route::get('/kelurahan/{kecamatan_id}', [ServiceController::class, 'getKelurahans']);
         Route::get('/bengkel/{id}', [ServiceController::class, 'detailBengkel']);
+    });
+
+
+    Route::prefix('bengkel')->group(function () {
+        // Bengkel CRUD
+        Route::get('/', [BengkelController::class, 'index']);
+        Route::get('/list', [BengkelController::class, 'all']);
+        Route::get('/', [BengkelController::class, 'index']);
+        Route::get('/{id}', [BengkelController::class, 'show']);
+        Route::post('/', [BengkelController::class, 'store']);
+        Route::put('/{id}', [BengkelController::class, 'update']);
+        Route::delete('/{id}', [BengkelController::class, 'destroy']);
+        Route::get('/kelurahan/{kecamatan_id}', [BengkelController::class, 'getKelurahans']);
+
+        // // Booking Mitra
+        // Route::get('/bookings', [BengkelBookingController::class, 'index']);
+        // Route::get('/bookings/{id}', [BengkelBookingController::class, 'show']);
+        // Route::put('/bookings/{id}', [BengkelBookingController::class, 'update']);
+
+        // // Transactions Mitra
+        // Route::get('/transactions', [BengkelTransactionController::class, 'index']);
+        // Route::get('/transactions/{id}', [BengkelTransactionController::class, 'show']);
+        // Route::put('/transactions/{id}', [BengkelTransactionController::class, 'update']);
+
+        // // Cart Mitra
+        // Route::post('/cart/add', [BengkelTransactionController::class, 'cartAdd']);
+        // Route::delete('/cart/{id}', [BengkelTransactionController::class, 'cartRemove']);
+
+        // // Checkout Mitra
+        // Route::post('/checkout', [BengkelTransactionController::class, 'checkout']);
     });
 
 // ✅ Authenticated
@@ -130,12 +160,12 @@ Route::middleware('auth:sanctum')->group(function () {
     */
     Route::prefix('bengkel')->group(function () {
         // Bengkel CRUD
-        Route::get('/', [BengkelController::class, 'index']);
-        Route::get('/{id}', [BengkelController::class, 'show']);
-        Route::post('/', [BengkelController::class, 'store']);
-        Route::put('/{id}', [BengkelController::class, 'update']);
-        Route::delete('/{id}', [BengkelController::class, 'destroy']);
-        Route::get('/kelurahan/{kecamatan_id}', [BengkelController::class, 'getKelurahans']);
+        // Route::get('/', [BengkelController::class, 'index']);
+        // Route::get('/{id}', [BengkelController::class, 'show']);
+        // Route::post('/', [BengkelController::class, 'store']);
+        // Route::put('/{id}', [BengkelController::class, 'update']);
+        // Route::delete('/{id}', [BengkelController::class, 'destroy']);
+        // Route::get('/kelurahan/{kecamatan_id}', [BengkelController::class, 'getKelurahans']);
 
         // Booking Mitra
         Route::get('/bookings', [BengkelBookingController::class, 'index']);
