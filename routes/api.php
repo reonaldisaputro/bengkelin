@@ -94,11 +94,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/layanans/{id}', [LayananController::class, 'update']);
     Route::delete('/layanans/{id}', [LayananController::class, 'destroy']);
 
-    Route::post('/products', [ProductController::class, 'store']);
-    Route::get('/products/{id}', [ProductController::class, 'show']);
-    Route::put('/products/{id}', [ProductController::class, 'update']);
-    Route::delete('/products/{id}', [ProductController::class, 'destroy']);
-
     // Profile
     Route::get('/profile', [ProfileUserController::class, 'show']);
     Route::put('/profile', [ProfileUserController::class, 'update']);
@@ -111,9 +106,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile/transactions', [ProfileUserController::class, 'transactionList']);
     Route::get('/profile/transactions/{id}', [ProfileUserController::class, 'transactionDetail']);
 
-    Route::get('/', [WithdrawRequestController::class, 'index']);
-    Route::post('/', [WithdrawRequestController::class, 'store']);
-    Route::get('/{id}', [WithdrawRequestController::class, 'show']);
+    // Route::get('/', [WithdrawRequestController::class, 'index']);
+    // Route::post('/', [WithdrawRequestController::class, 'store']);
+    // Route::get('/{id}', [WithdrawRequestController::class, 'show']);
 
     /*
     |--------------------------------------------------------------------------

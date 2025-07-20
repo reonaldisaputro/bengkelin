@@ -11,12 +11,20 @@ use App\Helpers\ResponseFormatter;
 
 class CartController extends Controller
 {
-    // GET /api/cart
     public function index()
     {
-        $carts = Cart::with('product')->where('user_id', Auth::id())->get();
+        $userId = Auth::id();
+        \Log::info("User ID: " . $userId);
+
+        $carts = Cart::with(['product', 'bengkel'])->where('user_id', $userId)->get();
+
+        if ($carts->isEmpty()) {
+            return ResponseFormatter::success([], 'Keranjang kosong');
+        }
+
         return ResponseFormatter::success($carts, 'Data keranjang berhasil diambil');
     }
+
 
     // POST /api/cart/add
     public function add(Request $request)
@@ -71,7 +79,7 @@ class CartController extends Controller
     // PUT /api/cart/{id}
     public function update(Request $request, $id)
     {
-        $cart = Cart::with('product')->findOrFail($id);
+        $cart = Cart::with(['product', 'bengkel'])->findOrFail($id);
 
         if ($cart->user_id !== Auth::id()) {
             return ResponseFormatter::error(null, 'Akses ditolak', 403);
