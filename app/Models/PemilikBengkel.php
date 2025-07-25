@@ -6,10 +6,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Foundation\Auth\User as Model;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class PemilikBengkel extends Model
 {
-    use HasFactory, Notifiable, CanResetPassword;
+   use HasApiTokens, HasFactory, Notifiable, CanResetPassword;
 
     protected $fillable = [
         'name',

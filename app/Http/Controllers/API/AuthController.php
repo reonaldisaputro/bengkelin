@@ -120,8 +120,31 @@ class AuthController extends Controller
         return ResponseFormatter::success(null, 'Logged out successfully');
     }
 
+    public function logoutOwner(Request $request)
+    {
+        $owner = Auth::guard('owner-api')->user();
+
+        if ($owner && $request->user('owner-api')->currentAccessToken()) {
+            $request->user('owner-api')->currentAccessToken()->delete();
+            return ResponseFormatter::success(null, 'Logout owner berhasil');
+        }
+
+        return ResponseFormatter::error(null, 'Gagal logout owner', 401);
+    }
+
     public function fetch(Request $request)
     {
         return ResponseFormatter::success($request->user(), 'Data profile user berhasil diambil');
+    }
+
+    public function fetchOwner(Request $request)
+    {
+        $owner = Auth::guard('owner-api')->user();
+
+        if ($owner) {
+            return ResponseFormatter::success($owner, 'Data profile owner berhasil diambil');
+        }
+
+        return ResponseFormatter::error(null, 'Owner tidak ditemukan', 404);
     }
 }
