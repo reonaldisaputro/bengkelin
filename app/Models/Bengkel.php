@@ -42,7 +42,7 @@ class Bengkel extends Model
 
     public function pemilik_bengkel()
     {
-        return $this->belongsTo(PemilikBengkel::class);
+        return $this->belongsTo(PemilikBengkel::class, 'pemilik_id');
     }
 
     // Relasi many-to-many dengan Specialist

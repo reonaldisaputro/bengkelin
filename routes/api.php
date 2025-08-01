@@ -53,8 +53,6 @@ Route::get('/products/{id}', [PageController::class, 'detailProduct']);
         Route::get('/', [BengkelController::class, 'index']);
         Route::get('/{id}', [BengkelController::class, 'show']);
         Route::post('/', [BengkelController::class, 'store']);
-        Route::put('/{id}', [BengkelController::class, 'update']);
-        Route::delete('/{id}', [BengkelController::class, 'destroy']);
         Route::get('/kelurahan/{kecamatan_id}', [BengkelController::class, 'getKelurahans']);
 
         // // Booking Mitra
@@ -206,6 +204,12 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:owner-api')->group(function () {
     Route::get('/owner/profile', [AuthController::class, 'fetchOwner']);
     Route::post('/owner/logout', [AuthController::class, 'logoutOwner']);
+
+    Route::prefix('bengkel')->group(function () {
+        Route::post('/', [BengkelController::class, 'store']);
+        Route::put('/{id}', [BengkelController::class, 'update']);
+        Route::delete('/{id}', [BengkelController::class, 'destroy']);
+    });
 });
 
 Route::post('/midtrans-callback', [CheckoutController::class, 'callback']);

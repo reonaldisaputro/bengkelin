@@ -26,18 +26,25 @@ class BengkelController extends Controller
         $bengkels = Bengkel::where('pemilik_id', Auth::id())->with('specialists')->get();
         return ResponseFormatter::success($bengkels, 'Data bengkel berhasil diambil');
     }
+    
 
-    // GET /api/bengkel/{id}
-    public function show($id)
+   public function show($id)
     {
-        $bengkel = Bengkel::with('specialists')->find($id);
-
+        $bengkel = Bengkel::with([
+            'specialists',
+            'pemilik_bengkel', // eager load pemilik bengkel
+            'kecamatan',
+            'kelurahan',
+            'products'
+        ])->find($id);
+    
         if (!$bengkel) {
             return ResponseFormatter::error(null, 'Bengkel tidak ditemukan', 404);
         }
-
+    
         return ResponseFormatter::success($bengkel, 'Detail bengkel berhasil diambil');
     }
+
 
     // POST /api/bengkel
     public function store(Request $request)
