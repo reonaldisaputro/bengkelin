@@ -110,44 +110,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Admin Routes
-    |--------------------------------------------------------------------------
-    */
-    Route::prefix('admin')->group(function () {
-        // Dashboard
-        Route::get('/dashboard', [AdminController::class, 'dashboard']);
-
-        // Users
-        Route::get('/users', [AdminController::class, 'listUser']);
-        Route::get('/users/{id}', [AdminController::class, 'detailUser']);
-        Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
-
-        // Owners
-        Route::get('/owners', [AdminController::class, 'listOwner']);
-        Route::get('/owners/{id}', [AdminController::class, 'detailOwner']);
-        Route::delete('/owners/{id}', [AdminController::class, 'deleteOwner']);
-
-        // Bengkels (Admin View)
-        Route::get('/bengkels', [AdminController::class, 'listBengkel']);
-        Route::get('/bengkels/{id}', [AdminController::class, 'detailBengkel']);
-        Route::delete('/bengkels/{id}', [AdminController::class, 'deleteBengkel']);
-
-        // Bookings (Admin View)
-        Route::get('/bookings', [AdminController::class, 'listBooking']);
-        Route::get('/bookings/{id}', [AdminController::class, 'detailBooking']);
-
-        // Transactions (Admin View)
-        Route::get('/transactions', [AdminController::class, 'listTransaction']);
-        Route::get('/transactions/{id}', [AdminController::class, 'detailTransaction']);
-
-        // Pencairan
-        Route::get('/pencairan', [AdminPencairanController::class, 'index']);
-        Route::get('/pencairan/{id}', [AdminPencairanController::class, 'show']);
-        Route::put('/pencairan/{id}', [AdminPencairanController::class, 'update']);
-    });
-
-    /*
-    |--------------------------------------------------------------------------
     | Bengkel (Mitra) Routes
     |--------------------------------------------------------------------------
     */
@@ -213,3 +175,62 @@ Route::middleware('auth:owner-api')->group(function () {
 });
 
 Route::post('/midtrans-callback', [CheckoutController::class, 'callback']);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ /*
+    |--------------------------------------------------------------------------
+    | Admin Routes
+    |--------------------------------------------------------------------------
+    */
+    // Route::prefix('admin')->group(function () {
+    //     // Dashboard
+    //     Route::get('/dashboard', [AdminController::class, 'dashboard']);
+
+    //     // Users
+    //     Route::get('/users', [AdminController::class, 'listUser']);
+    //     Route::get('/users/{id}', [AdminController::class, 'detailUser']);
+    //     Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
+
+    //     // Owners
+    //     Route::get('/owners', [AdminController::class, 'listOwner']);
+    //     Route::get('/owners/{id}', [AdminController::class, 'detailOwner']);
+    //     Route::delete('/owners/{id}', [AdminController::class, 'deleteOwner']);
+
+    //     // Bengkels (Admin View)
+    //     Route::get('/bengkels', [AdminController::class, 'listBengkel']);
+    //     Route::get('/bengkels/{id}', [AdminController::class, 'detailBengkel']);
+    //     Route::delete('/bengkels/{id}', [AdminController::class, 'deleteBengkel']);
+
+    //     // Bookings (Admin View)
+    //     Route::get('/bookings', [AdminController::class, 'listBooking']);
+    //     Route::get('/bookings/{id}', [AdminController::class, 'detailBooking']);
+
+    //     // Transactions (Admin View)
+    //     Route::get('/transactions', [AdminController::class, 'listTransaction']);
+    //     Route::get('/transactions/{id}', [AdminController::class, 'detailTransaction']);
+
+    //     // Pencairan
+    //     Route::get('/pencairan', [AdminPencairanController::class, 'index']);
+    //     Route::get('/pencairan/{id}', [AdminPencairanController::class, 'show']);
+    //     Route::put('/pencairan/{id}', [AdminPencairanController::class, 'update']);
+    // });
