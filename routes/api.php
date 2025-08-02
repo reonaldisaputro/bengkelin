@@ -148,7 +148,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::prefix('booking')->group(function () {
         Route::post('/', [BookingController::class, 'store']);
         Route::get('/{bengkel_id}/booked-times', [BookingController::class, 'getBookedTimes']);
+
     });
+
+    // Lihat booking user sendiri
+    Route::get('/user/bookings', [BookingController::class, 'userBookings']);
+    Route::get('/user/bookings/{id}', [BookingController::class, 'showUserBooking']);
 
     /*
     |--------------------------------------------------------------------------

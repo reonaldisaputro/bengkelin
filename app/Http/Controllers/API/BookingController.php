@@ -103,4 +103,15 @@ class BookingController extends Controller
 
         return ResponseFormatter::success($bookings, 'Waktu booking yang telah terisi berhasil diambil.');
     }
+
+    public function userBookings()
+    {
+        $bookings = Booking::with(['bengkel'])
+            ->where('user_id', Auth::id())
+            ->orderBy('tanggal_booking', 'desc')
+            ->get();
+
+        return ResponseFormatter::success($bookings, 'List booking user berhasil diambil.');
+    }
+
 }
