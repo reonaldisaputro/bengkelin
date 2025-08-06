@@ -2,14 +2,14 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\API\CheckoutController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AdminPencairanController;
-use App\Http\Controllers\Api\BengkelBookingController;
+use App\Http\Controllers\API\BengkelBookingController;
 use App\Http\Controllers\API\BengkelController;
 use App\Http\Controllers\Api\BengkelTransactionController;
-use App\Http\Controllers\Api\BookingController;
+use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\Api\ChatbotController;
 use App\Http\Controllers\API\DashboardController;
@@ -39,11 +39,11 @@ Route::get('/products', [PageController::class, 'index']);
 Route::get('/products/{id}', [PageController::class, 'detailProduct']);
 
  Route::prefix('service')->group(function () {
-        Route::get('/', [ServiceController::class, 'index']);
-        Route::get('/kecamatan', [ServiceController::class, 'getKecamatan']);
-        Route::get('/kelurahan/{kecamatan_id}', [ServiceController::class, 'getKelurahans']);
-        Route::get('/bengkel/{id}', [ServiceController::class, 'detailBengkel']);
-    });
+    Route::get('/', [ServiceController::class, 'index']);
+    Route::get('/kecamatan', [ServiceController::class, 'getKecamatan']);
+    Route::get('/kelurahan/{kecamatan_id}', [ServiceController::class, 'getKelurahans']);
+    Route::get('/bengkel/{id}', [ServiceController::class, 'detailBengkel']);
+});
 
 
     Route::prefix('bengkel')->group(function () {
@@ -78,6 +78,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'fetch']);
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::post('/checkout', [CheckoutController::class, 'checkout']);
+    Route::get('/checkout-summary', [CheckoutController::class, 'getCheckoutSummary']);
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::get('/jadwals', [JadwalController::class, 'index']);

@@ -16,6 +16,92 @@ use Midtrans\Notification;
 
 class CheckoutController extends Controller
 {
+    public function getCheckoutSummary(Request $request)
+    {
+        // 1. Dapatkan user yang sedang login
+        $user = Auth::user()->load('kecamatan', 'kelurahan');
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthenticated.'], 401);
+        }
+
+        // 2. Dapatkan semua item di keranjang milik user
+        $carts = Cart::with('product', 'bengkel.kecamatan')
+                     ->where('user_id', $user->id)
+                     ->get();
+
+        if ($carts->isEmpty()) {
+            return response()->json(['message' => 'Keranjang Anda kosong.'], 404);
+        }
+
+        // 3. Replikasi semua logic perhitungan dari blade
+        $sub_total = 0;
+        $total_weight = 0;
+        $order_items = [];
+
+        foreach ($carts as $cart) {
+            // Pastikan produk ada untuk menghindari error
+            if ($cart->product) {
+                $item_total = $cart->product->price * $cart->quantity;
+                $sub_total += $item_total;
+                $total_weight += $cart->product->weight * $cart->quantity;
+
+                // Siapkan data item untuk response JSON
+                $order_items[] = [
+                    'product_name' => $cart->product->name,
+                    'quantity'     => $cart->quantity,
+                    'price'        => (float) $cart->product->price,
+                    'total_price'  => $item_total,
+                    // Tambahkan URL gambar jika ada
+                    'image_url'    => $cart->product->image_url ?? null,
+                ];
+            }
+        }
+        
+        // Asumsi hanya ada satu bengkel per checkout
+        $bengkel = $carts->first()->bengkel;
+        $ongkir = 0;
+
+        if ($bengkel && $bengkel->kecamatan_id == $user->kecamatan->id) {
+            $ongkir = 15000;
+        } else {
+            $ongkir = 25000;
+        }
+
+        if ($total_weight > 10) {
+            $extra_weight = $total_weight - 10;
+            $ongkir += $extra_weight * 10000;
+        }
+
+        $administrasi = 0.05 * $sub_total;
+        $grand_total = $sub_total + $ongkir + $administrasi;
+
+        // 4. Siapkan struktur response JSON yang bersih
+        $response = [
+            'user_info' => [
+                'name'      => $user->name,
+                'email'     => $user->email,
+                'phone'     => $user->phone_number,
+                'kecamatan' => $user->kecamatan->name,
+                'kelurahan' => $user->kelurahan->name,
+                'address'   => $user->alamat,
+            ],
+            'order_items' => $order_items,
+            'cost_summary' => [
+                'sub_total'     => $sub_total,
+                'shipping_cost' => $ongkir,
+                'admin_fee'     => $administrasi,
+                'grand_total'   => $grand_total,
+            ],
+        ];
+
+        // 5. Kembalikan data sebagai JSON
+        return response()->json([
+            'success' => true,
+            'data'    => $response,
+        ]);
+    }
+    
     public function checkout(Request $request)
     {
         $user = Auth::user();

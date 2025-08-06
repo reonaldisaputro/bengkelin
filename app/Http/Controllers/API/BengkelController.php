@@ -35,7 +35,8 @@ class BengkelController extends Controller
             'pemilik_bengkel', // eager load pemilik bengkel
             'kecamatan',
             'kelurahan',
-            'products'
+            'products',
+            'jadwals'
         ])->find($id);
     
         if (!$bengkel) {

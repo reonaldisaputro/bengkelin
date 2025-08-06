@@ -87,10 +87,12 @@ class CheckoutController extends Controller
         Config::$isSanitized = config('services.midtrans.isSanitized');
         Config::$is3ds = config('services.midtrans.is3ds');
 
+        $orderId = 'ORDER-' . $transaction->id . '-' . now()->timestamp;
+
         // Create array for Midtrans
         $midtrans = [
             'transaction_details' => [
-                'order_id' => $transaction->id, // Use unique order_id
+                'order_id' => $orderId, // Use unique order_id
                 'gross_amount' => $transaction->grand_total,
             ],
             'customer_details' => [
