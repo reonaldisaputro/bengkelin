@@ -95,6 +95,8 @@ class BengkelController extends Controller
             'bengkel_name' => 'required|string|max:255',
             'bengkel_description' => 'required|string',
             'bengkel_address' => 'required|string',
+            'latitude' => 'nullable|numeric|between:-90,90',     // <-- Tambahkan validasi
+            'longitude' => 'nullable|numeric|between:-180,180',
             'kecamatan_id' => 'required|exists:kecamatans,id',
             'kelurahan_id' => 'required|exists:kelurahans,id',
             'image' => 'nullable|image|max:2048',
@@ -122,6 +124,8 @@ class BengkelController extends Controller
         $bengkel->pemilik_id = $owner_id;
         $bengkel->kecamatan_id = $request->kecamatan_id;
         $bengkel->kelurahan_id = $request->kelurahan_id;
+        $bengkel->latitude = $request->latitude;
+        $bengkel->longitude = $request->longitude;
         $bengkel->save();
 
         // Sinkronisasi relasi dengan specialists

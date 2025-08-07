@@ -79,6 +79,30 @@
                             <textarea rows="10" type="text" class="form-control" id="bengkel_address" name="bengkel_address"
                                 placeholder="Alamat bengkel">{{ $bengkel->alamat }}</textarea>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="latitude">Latitude</label>
+                                    <input type="text" class="form-control" id="latitude" name="latitude" 
+                                           value="{{ old('latitude', $bengkel->latitude) }}" placeholder="Akan terisi otomatis dari peta">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="longitude">Longitude</label>
+                                    <input type="text" class="form-control" id="longitude" name="longitude" 
+                                           value="{{ old('longitude', $bengkel->longitude) }}" placeholder="Akan terisi otomatis dari peta">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                             <label>Pilih Lokasi di Peta</label>
+                             <div id="map" style="height: 400px; width: 100%; border-radius: 5px;"></div>
+                             <small class="form-text text-muted">Klik pada peta atau geser penanda untuk menentukan lokasi persis bengkel Anda.</small>
+                        </div>
+
                         <div class="form-group">
                             <label for="image">Gambar Bengkel</label>
                             <div class="input-group">
@@ -152,6 +176,30 @@
                             <textarea rows="10" type="text" class="form-control" id="bengkel_address" name="bengkel_address"
                                 placeholder="Alamat bengkel">{{ old('bengkel_address', $bengkel->alamat) }}</textarea>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="latitude">Latitude</label>
+                                    <input type="text" class="form-control" id="latitude" name="latitude" 
+                                           value="{{ old('latitude', $bengkel->latitude) }}" placeholder="Akan terisi otomatis dari peta">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="longitude">Longitude</label>
+                                    <input type="text" class="form-control" id="longitude" name="longitude" 
+                                           value="{{ old('longitude', $bengkel->longitude) }}" placeholder="Akan terisi otomatis dari peta">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                             <label>Pilih Lokasi di Peta</label>
+                             <div id="map" style="height: 400px; width: 100%; border-radius: 5px;"></div>
+                             <small class="form-text text-muted">Klik pada peta atau geser penanda untuk menentukan lokasi persis bengkel Anda.</small>
+                        </div>
+                        
                         <div class="form-group">
                             <label for="image">Gambar Bengkel</label>
                             <img id="image-preview" src="{{ asset('storage/' . $bengkel->image) }}" alt="Image Preview"
@@ -216,5 +264,61 @@
 
             reader.readAsDataURL(file);
         });
+    </script>
+
+    <script>
+        // 1. Inisialisasi Peta
+        // Ambil nilai lat/long yang sudah ada, atau gunakan default (Jakarta)
+        var initialLat = {{ $bengkel->latitude ?? -6.2088 }};
+        var initialLng = {{ $bengkel->longitude ?? 106.8456 }};
+        var map = L.map('map').setView([initialLat, initialLng], 15); // Angka 15 adalah level zoom
+
+        // 2. Tambahkan Tile Layer (Tampilan Peta) dari OpenStreetMap
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // 3. Buat Penanda (Marker)
+        var marker = L.marker([initialLat, initialLng], {
+            draggable: true // Membuat penanda bisa digeser
+        }).addTo(map);
+
+        // Fungsi untuk memperbarui input field saat penanda digeser
+        function onMarkerDragEnd(e) {
+            var latlng = e.target.getLatLng();
+            document.getElementById('latitude').value = latlng.lat.toFixed(8);
+            document.getElementById('longitude').value = latlng.lng.toFixed(8);
+        }
+
+        // Fungsi untuk memindahkan penanda saat peta diklik
+        function onMapClick(e) {
+            var latlng = e.latlng;
+            marker.setLatLng(latlng);
+            document.getElementById('latitude').value = latlng.lat.toFixed(8);
+            document.getElementById('longitude').value = latlng.lng.toFixed(8);
+        }
+        
+        // Tambahkan event listener
+        marker.on('dragend', onMarkerDragEnd);
+        map.on('click', onMapClick);
+
+        // Bonus: Update peta jika input lat/long diubah manual
+        document.getElementById('latitude').addEventListener('change', function(e){
+            updateMapFromInputs();
+        });
+        document.getElementById('longitude').addEventListener('change', function(e){
+            updateMapFromInputs();
+        });
+
+        function updateMapFromInputs(){
+            var lat = parseFloat(document.getElementById('latitude').value);
+            var lng = parseFloat(document.getElementById('longitude').value);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                var newLatLng = L.latLng(lat, lng);
+                marker.setLatLng(newLatLng);
+                map.panTo(newLatLng);
+            }
+        }
     </script>
 @endpush

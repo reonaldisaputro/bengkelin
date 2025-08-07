@@ -46,14 +46,20 @@ Route::get('/products/{id}', [PageController::class, 'detailProduct']);
 });
 
 
+
+
     Route::prefix('bengkel')->group(function () {
         // Bengkel CRUD
         Route::get('/', [BengkelController::class, 'index']);
         Route::get('/list', [BengkelController::class, 'all']);
+        Route::get('/nearby', [BengkelController::class, 'findNearby']);
         Route::get('/', [BengkelController::class, 'index']);
         Route::get('/{id}', [BengkelController::class, 'show']);
         Route::post('/', [BengkelController::class, 'store']);
         Route::get('/kelurahan/{kecamatan_id}', [BengkelController::class, 'getKelurahans']);
+
+
+
 
         // // Booking Mitra
         // Route::get('/bookings', [BengkelBookingController::class, 'index']);

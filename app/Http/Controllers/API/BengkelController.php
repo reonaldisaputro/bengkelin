@@ -11,9 +11,60 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\Helpers\ResponseFormatter;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class BengkelController extends Controller
 {
+    public function findNearby(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'latitude' => 'required|numeric',
+        'longitude' => 'required|numeric',
+        'radius' => 'nullable|numeric|min:1',
+    ]);
+
+    if ($validator->fails()) {
+        return ResponseFormatter::error(['errors' => $validator->errors()], 'Input tidak valid', 400);
+    }
+
+    $latitude = $request->latitude;
+    $longitude = $request->longitude;
+    $radius = $request->radius ?? 10;
+
+    $bengkels = Bengkel::select('bengkels.*')
+        ->selectRaw(
+            '( 6371 * acos( cos( radians(?) ) *
+                cos( radians( latitude ) )
+                * cos( radians( longitude ) - radians(?)
+                ) + sin( radians(?) ) *
+                sin( radians( latitude ) ) )
+              ) AS distance',
+            [$latitude, $longitude, $latitude]
+        )
+        ->with(['specialists', 'kecamatan', 'kelurahan'])
+        ->whereNotNull(['latitude', 'longitude'])
+        ->having('distance', '<=', $radius)
+        ->orderBy('distance', 'asc')
+        // 1. Ganti paginate(10) dengan get()
+        ->get();
+
+    // 2. Karena $bengkels sudah merupakan Collection, panggil transform langsung
+    $bengkels->transform(function ($bengkel) {
+        if ($bengkel->image) {
+            $bengkel->image_url = url('images/' . $bengkel->image);
+        }
+        return $bengkel;
+    });
+
+    if ($bengkels->isEmpty()) {
+        // Menggunakan ResponseFormatter::success dengan data kosong agar konsisten
+        return ResponseFormatter::success([], 'Tidak ada bengkel ditemukan dalam radius ' . $radius . ' km.');
+    }
+
+    return ResponseFormatter::success($bengkels, 'Bengkel terdekat berhasil ditemukan');
+}
+
     public function all()
     {
         $bengkels = Bengkel::with(['specialists', 'kecamatan', 'kelurahan'])->get();

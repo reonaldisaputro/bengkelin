@@ -14,6 +14,8 @@ class Bengkel extends Model
         'image',
         'description',
         'alamat',
+        'latitude',
+        'longitude',
         'pemilik_id',
         'kecamatan_id',
         'kelurahan_id',
