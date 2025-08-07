@@ -18,14 +18,13 @@ class CheckoutController extends Controller
 {
     public function getCheckoutSummary(Request $request)
     {
-        // 1. Dapatkan user yang sedang login
+
         $user = Auth::user()->load('kecamatan', 'kelurahan');
 
         if (!$user) {
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        // 2. Dapatkan semua item di keranjang milik user
         $carts = Cart::with('product', 'bengkel.kecamatan')
                      ->where('user_id', $user->id)
                      ->get();
@@ -34,31 +33,26 @@ class CheckoutController extends Controller
             return response()->json(['message' => 'Keranjang Anda kosong.'], 404);
         }
 
-        // 3. Replikasi semua logic perhitungan dari blade
         $sub_total = 0;
         $total_weight = 0;
         $order_items = [];
 
         foreach ($carts as $cart) {
-            // Pastikan produk ada untuk menghindari error
             if ($cart->product) {
                 $item_total = $cart->product->price * $cart->quantity;
                 $sub_total += $item_total;
                 $total_weight += $cart->product->weight * $cart->quantity;
 
-                // Siapkan data item untuk response JSON
                 $order_items[] = [
                     'product_name' => $cart->product->name,
                     'quantity'     => $cart->quantity,
                     'price'        => (float) $cart->product->price,
                     'total_price'  => $item_total,
-                    // Tambahkan URL gambar jika ada
                     'image_url'    => $cart->product->image_url ?? null,
                 ];
             }
         }
         
-        // Asumsi hanya ada satu bengkel per checkout
         $bengkel = $carts->first()->bengkel;
         $ongkir = 0;
 
@@ -76,7 +70,6 @@ class CheckoutController extends Controller
         $administrasi = 0.05 * $sub_total;
         $grand_total = $sub_total + $ongkir + $administrasi;
 
-        // 4. Siapkan struktur response JSON yang bersih
         $response = [
             'user_info' => [
                 'name'      => $user->name,
@@ -95,7 +88,6 @@ class CheckoutController extends Controller
             ],
         ];
 
-        // 5. Kembalikan data sebagai JSON
         return response()->json([
             'success' => true,
             'data'    => $response,
@@ -115,7 +107,9 @@ class CheckoutController extends Controller
             return ResponseFormatter::error(null, 'Keranjang kosong', 400);
         }
 
-        $bengkel_id = $carts->first()->bengkel->id;
+        foreach ($carts as $cart) {
+            $bengkel_id = $cart->bengkel->id;
+        }
 
         $transaction = Transaction::create([
             'transaction_code' => $transaction_code,
@@ -160,9 +154,11 @@ class CheckoutController extends Controller
         Config::$isSanitized = config('services.midtrans.isSanitized');
         Config::$is3ds = config('services.midtrans.is3ds');
 
+        $orderId = 'ORDER-' . $transaction->id . '-' . now()->timestamp;
+
         $midtrans = [
             'transaction_details' => [
-                'order_id' => $transaction->id,
+                'order_id' => $orderId,
                 'gross_amount' => $transaction->grand_total,
             ],
             'customer_details' => [

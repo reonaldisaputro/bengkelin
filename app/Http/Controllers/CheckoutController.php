@@ -24,6 +24,7 @@ class CheckoutController extends Controller
 
     public function checkoutProcess(Request $request)
     {
+        dd($request);
         $user = Auth::user();
         // Checkout Process
         $transaction_code = 'TRANS-' . mt_rand(000, 999);
