@@ -11,7 +11,7 @@ use App\Http\Controllers\API\BengkelController;
 use App\Http\Controllers\Api\BengkelTransactionController;
 use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\CartController;
-use App\Http\Controllers\Api\ChatbotController;
+use App\Http\Controllers\API\ChatbotController;
 use App\Http\Controllers\API\DashboardController;
 use App\Http\Controllers\API\JadwalController;
 use App\Http\Controllers\API\LayananController;
@@ -19,6 +19,7 @@ use App\Http\Controllers\API\PageController;
 use App\Http\Controllers\API\ProductController;
 use App\Http\Controllers\API\ProfileUserController;
 use App\Http\Controllers\API\ServiceController;
+use App\Http\Controllers\API\ChatApiController;
 use App\Http\Controllers\API\WithdrawRequestController;
 
 /*
@@ -110,6 +111,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Transactions
     Route::get('/profile/transactions', [ProfileUserController::class, 'transactionList']);
     Route::get('/profile/transactions/{id}', [ProfileUserController::class, 'transactionDetail']);
+
+    // Rating
+    Route::post('/ratings', [\App\Http\Controllers\API\RatingController::class, 'store']);
+    Route::get('/ratings/product/{product}', [\App\Http\Controllers\API\RatingController::class, 'listByProduct']);
+
+    Route::post('/chat/send', [ChatApiController::class, 'send']);
 
     // Route::get('/', [WithdrawRequestController::class, 'index']);
     // Route::post('/', [WithdrawRequestController::class, 'store']);

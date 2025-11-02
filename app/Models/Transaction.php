@@ -48,4 +48,12 @@ class Transaction extends Model
     {
         return $this->hasMany(DetailTransaction::class);
     }
+
+     public function ratings()
+    {
+        // jika kolom foreign di Rating mengarah ke transaction_id, relasi langsung bisa:
+        return $this->hasMany(Rating::class);
+        // alternatif (kalau mau strict via detail): hasManyThrough
+        // return $this->hasManyThrough(Rating::class, DetailTransaction::class, 'transaction_id', 'detail_transaction_id', 'id', 'id');
+    }
 }

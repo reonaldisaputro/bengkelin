@@ -74,12 +74,29 @@ class ProfileUserController extends Controller
         return ResponseFormatter::success($transactions, 'Data transaksi berhasil diambil.');
     }
 
+    // App\Http\Controllers\API\ProfileUserController.php
+
     public function transactionDetail($id)
     {
-        $transaction = Transaction::with(['detail_transactions.product', 'bengkel', 'layanan'])
-            ->where('user_id', Auth::id())
-            ->findOrFail($id);
+        $userId = Auth::id();
+
+        $transaction = Transaction::with([
+            // detail + product + rating milik user ini
+            'detail_transactions' => function ($q) use ($userId) {
+                $q->with([
+                    'product',
+                    'rating' => function ($r) use ($userId) {
+                        $r->where('user_id', $userId);
+                    },
+                ]);
+            },
+            'bengkel',
+            'layanan'
+        ])
+        ->where('user_id', $userId)
+        ->findOrFail($id);
 
         return ResponseFormatter::success($transaction, 'Detail transaksi berhasil diambil.');
     }
+
 }
