@@ -18,7 +18,7 @@ class ChatApiController extends Controller
         $out = ['messages'=>[], 'quick_replies'=>[], 'context_id'=>$ctx, 'end'=>false];
 
         // --- Router intent sederhana (gratis & deterministik) ---
-        if ($payload === 'menu' || $msg === '' ) {
+        if ($payload === 'menu' || ($payload === '' && $msg === '') ) {
             $out['messages'][] = ['type'=>'text','text'=>"Hai {$user->name}! Pilih layanan di bawah:"];
             $out['quick_replies'] = [
                 ['title'=>'Status Pesanan','payload'=>'status_prompt'],
@@ -42,14 +42,47 @@ class ChatApiController extends Controller
                     $out['messages'][]=['type'=>'text','text'=>"Status {$code}:\n- Pembayaran: {$trx->payment_status}\n- Pengiriman: ".($trx->shipping_status ?? '-')."\n- Item: {$items}\n- Total: Rp ".number_format($trx->grand_total,0,',','.')];
                     $out['messages'][]=['type'=>'link','title'=>'Lihat detail','url'=>url('/profile-transaction/'.$trx->id)];
                 }
+
+                $out['quick_replies'][] = ['title'=>'Menu Utama', 'payload'=>'menu', 'type'=>'payload'];
+                
                 return ResponseFormatter::success($out, 'ok');
             }
+
+            if ($payload === 'status_prompt') {
+                $active_trx = \App\Models\Transaction::where('user_id', $user->id)
+                        ->whereIn('payment_status', ['pending', 'unpaid', 'processing']) // Sesuaikan statusnya
+                        ->latest()
+                        ->take(5)
+                        ->get();
+
+                if ($active_trx->isEmpty()) {
+                    $out['messages'][] = ['type'=>'text', 'text'=>'Anda tidak memiliki pesanan aktif saat ini.'];
+                    $out['messages'][] = ['type'=>'text', 'text'=>'Jika punya kode, ketik: status TRANS-123'];
+                    return ResponseFormatter::success($out, 'ok');
+                }
+
+                $out['messages'][] = ['type'=>'text', 'text'=>'Anda memiliki beberapa pesanan aktif:'];
+                // Ubah transaksi aktif menjadi Quick Reply
+                foreach ($active_trx as $trx) {
+                    $out['quick_replies'][] = [
+                        'title' => $trx->transaction_code,
+                        // Kirim payload sebagai 'message' agar ditangkap oleh regex di atas
+                        'type' => 'message',
+                        'payload' => 'status ' . $trx->transaction_code,
+                        'message' => 'status ' . $trx->transaction_code
+                    ];
+                }
+                $out['quick_replies'][] = ['title'=>'Menu Utama', 'payload'=>'menu'];
+                return ResponseFormatter::success($out, 'ok');
+            }
+
             $out['messages'][]=['type'=>'text','text'=>'Ketik: status TRANS-123'];
+            
             return ResponseFormatter::success($out, 'ok');
         }
 
         if ($payload === 'rate_list' || preg_match('/(rating|ulas)/i',$msg)) {
-            $items = \App\Models\DetailTransaction::with(['product','transaction'])
+            $items = \App\Models\DetailTransaction::with(['product', 'layanan', 'transaction']) // Ambil juga relasi layanan
                 ->whereHas('transaction', fn($q)=>$q->where('user_id',$user->id)
                     ->whereIn('payment_status',['success','paid','completed']))
                 ->whereDoesntHave('rating', fn($q)=>$q->where('user_id',$user->id))
@@ -57,14 +90,52 @@ class ChatApiController extends Controller
 
             if ($items->isEmpty()) {
                 $out['messages'][]=['type'=>'text','text'=>'Tidak ada item yang perlu dirating. 👍'];
-            } else {
-                foreach ($items as $it) {
-                    $name = $it->product?->name ?? 'Item';
-                    $out['messages'][]=['type'=>'text','text'=>"Belum dirating: {$name} (qty {$it->qty})\nKetik: rate {$it->id} 5 \"komentar\""];
-                }
+                $out['quick_replies'][] = ['title'=>'Menu Utama', 'payload'=>'menu', 'type'=>'payload'];
+                return ResponseFormatter::success($out, 'ok');
             }
+
+            // --- LOGIKA BARU YANG LEBIH BAIK ---
+
+            // 1. Gabungkan semua item dalam SATU pesan
+            $item_list_text = "Anda punya " . $items->count() . " item/layanan yang belum diulas:\n";
+            foreach ($items as $it) {
+                // Cek apakah itu produk atau layanan
+                $name = $it->product?->name ?? $it->layanan?->name ?? 'Item (ID: '.$it->id.')';
+                $item_list_text .= "\n• {$name}\n  (Order: {$it->transaction->transaction_code})";
+
+                // 2. Buat Quick Reply interaktif untuk setiap item
+                $out['quick_replies'][] = [
+                    'title' => "Ulas: " . \Illuminate\Support\Str::limit($name, 20), // Batasi teks di tombol
+                    'payload' => 'rate_prompt_' . $it->id, // Payload baru yang spesifik
+                    'type' => 'payload'
+                ];
+            }
+
+            $out['messages'][] = ['type'=>'text', 'text'=> $item_list_text];
+            $out['messages'][] = ['type'=>'text', 'text'=> "Silakan pilih item di bawah untuk memberi ulasan."];
+            $out['quick_replies'][] = ['title'=>'Menu Utama', 'payload'=>'menu', 'type'=>'payload'];
             return ResponseFormatter::success($out, 'ok');
         }
+
+        if (preg_match('/^rate_prompt_(\d+)$/i', $payload, $m)) {
+                $detailId = $m[1];
+                // Validasi item milik user
+                $detail = \App\Models\DetailTransaction::with('product', 'layanan')
+                            ->whereHas('transaction', fn($q) => $q->where('user_id', $user->id))
+                            ->find($detailId);
+
+                if (!$detail) {
+                    $out['messages'][]=['type'=>'text','text'=>'Item tidak valid.'];
+                } else {
+                    $name = $detail->product?->name ?? $detail->layanan?->name ?? 'Item';
+                    $out['messages'][]=['type'=>'text', 'text'=>"Baik, Anda akan mengulas:\n{$name}"];
+                    $out['messages'][]=['type'=>'text', 'text'=>"Silakan ketik balasan dengan format:\nrate {$detail->id} [bintang 1-5] \"komentar\""];
+                    $out['messages'][]=['type'=>'text', 'text'=>"Contoh:\nrate {$detail->id} 5 \"Sangat memuaskan!\""];
+                }
+                
+                $out['quick_replies'][] = ['title'=>'Menu Utama', 'payload'=>'menu', 'type'=>'payload'];
+                return ResponseFormatter::success($out,'ok');
+            }
 
         if (preg_match('/^rate\s+(\d+)\s+([1-5])(?:\s+"(.*)")?$/i',$msg,$m)) {
             [$all,$detailId,$stars,$comment] = $m;
@@ -80,13 +151,22 @@ class ChatApiController extends Controller
                 $out['messages'][]=['type'=>'text','text'=>'Item ini sudah pernah diberi ulasan.'];
                 return ResponseFormatter::success($out,'ok');
             }
+            // \App\Models\Rating::create([
+            //     'user_id'=>$user->id,
+            //     'product_id'=>$detail->product_id,
+            //     'transaction_id'=>$detail->transaction_id,
+            //     'detail_transaction_id'=>$detail->id,
+            //     'stars'=> (int)$stars,
+            //     'comment'=> $comment ?: null,
+            // ]);
             \App\Models\Rating::create([
-                'user_id'=>$user->id,
-                'product_id'=>$detail->product_id,
-                'transaction_id'=>$detail->transaction_id,
-                'detail_transaction_id'=>$detail->id,
-                'stars'=> (int)$stars,
-                'comment'=> $comment ?: null,
+                'user_id' => $user->id,
+                'product_id' => $detail->product_id, // Akan null jika itu layanan
+                'layanan_id' => $detail->layanan_id, // Akan null jika itu produk
+                'transaction_id' => $detail->transaction_id,
+                'detail_transaction_id' => $detail->id,
+                'stars' => (int)$stars,
+                'comment' => $comment ?: null,
             ]);
             $out['messages'][]=['type'=>'text','text'=>'Terima kasih! Ulasan kamu tersimpan.'];
             return ResponseFormatter::success($out,'ok');

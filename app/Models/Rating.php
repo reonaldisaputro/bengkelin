@@ -13,6 +13,7 @@ class Rating extends Model
         'user_id',
         'product_id',
         'transaction_id',
+        'layanan_id',
         'detail_transaction_id',
         'stars',
         'comment',
