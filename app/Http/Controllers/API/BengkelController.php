@@ -17,53 +17,53 @@ use Illuminate\Support\Facades\DB;
 class BengkelController extends Controller
 {
     public function findNearby(Request $request)
-{
-    $validator = Validator::make($request->all(), [
-        'latitude' => 'required|numeric',
-        'longitude' => 'required|numeric',
-        'radius' => 'nullable|numeric|min:1',
-    ]);
+    {
+        $validator = Validator::make($request->all(), [
+            'latitude' => 'required|numeric',
+            'longitude' => 'required|numeric',
+            'radius' => 'nullable|numeric|min:1',
+        ]);
 
-    if ($validator->fails()) {
-        return ResponseFormatter::error(['errors' => $validator->errors()], 'Input tidak valid', 400);
-    }
-
-    $latitude = $request->latitude;
-    $longitude = $request->longitude;
-    $radius = $request->radius ?? 10;
-
-    $bengkels = Bengkel::select('bengkels.*')
-        ->selectRaw(
-            '( 6371 * acos( cos( radians(?) ) *
-                cos( radians( latitude ) )
-                * cos( radians( longitude ) - radians(?)
-                ) + sin( radians(?) ) *
-                sin( radians( latitude ) ) )
-              ) AS distance',
-            [$latitude, $longitude, $latitude]
-        )
-        ->with(['specialists', 'kecamatan', 'kelurahan'])
-        ->whereNotNull(['latitude', 'longitude'])
-        ->having('distance', '<=', $radius)
-        ->orderBy('distance', 'asc')
-        // 1. Ganti paginate(10) dengan get()
-        ->get();
-
-    // 2. Karena $bengkels sudah merupakan Collection, panggil transform langsung
-    $bengkels->transform(function ($bengkel) {
-        if ($bengkel->image) {
-            $bengkel->image_url = url('images/' . $bengkel->image);
+        if ($validator->fails()) {
+            return ResponseFormatter::error(['errors' => $validator->errors()], 'Input tidak valid', 400);
         }
-        return $bengkel;
-    });
 
-    if ($bengkels->isEmpty()) {
-        // Menggunakan ResponseFormatter::success dengan data kosong agar konsisten
-        return ResponseFormatter::success([], 'Tidak ada bengkel ditemukan dalam radius ' . $radius . ' km.');
+        $latitude = $request->latitude;
+        $longitude = $request->longitude;
+        $radius = $request->radius ?? 10;
+
+        $bengkels = Bengkel::select('bengkels.*')
+            ->selectRaw(
+                '( 6371 * acos( cos( radians(?) ) *
+                    cos( radians( latitude ) )
+                    * cos( radians( longitude ) - radians(?)
+                    ) + sin( radians(?) ) *
+                    sin( radians( latitude ) ) )
+                ) AS distance',
+                [$latitude, $longitude, $latitude]
+            )
+            ->with(['specialists', 'kecamatan', 'kelurahan'])
+            ->whereNotNull(['latitude', 'longitude'])
+            ->having('distance', '<=', $radius)
+            ->orderBy('distance', 'asc')
+            // 1. Ganti paginate(10) dengan get()
+            ->get();
+
+        // 2. Karena $bengkels sudah merupakan Collection, panggil transform langsung
+        $bengkels->transform(function ($bengkel) {
+            if ($bengkel->image) {
+                $bengkel->image_url = url('images/' . $bengkel->image);
+            }
+            return $bengkel;
+        });
+
+        if ($bengkels->isEmpty()) {
+            // Menggunakan ResponseFormatter::success dengan data kosong agar konsisten
+            return ResponseFormatter::success([], 'Tidak ada bengkel ditemukan dalam radius ' . $radius . ' km.');
+        }
+
+        return ResponseFormatter::success($bengkels, 'Bengkel terdekat berhasil ditemukan');
     }
-
-    return ResponseFormatter::success($bengkels, 'Bengkel terdekat berhasil ditemukan');
-}
 
     public function all()
     {
@@ -105,8 +105,13 @@ class BengkelController extends Controller
             'bengkel_name' => 'required|string|max:255',
             'bengkel_description' => 'required|string',
             'bengkel_address' => 'required|string',
+
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+
             'kecamatan_id' => 'required|exists:kecamatans,id',
             'kelurahan_id' => 'required|exists:kelurahans,id',
+
             'image' => 'required|image|max:2048',
             'specialist_ids' => 'required|array',
             'specialist_ids.*' => 'exists:specialists,id',
@@ -123,6 +128,9 @@ class BengkelController extends Controller
             'pemilik_id' => Auth::id(),
             'kecamatan_id' => $request->kecamatan_id,
             'kelurahan_id' => $request->kelurahan_id,
+
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
 
         $bengkel->specialists()->sync($request->specialist_ids);
@@ -146,6 +154,10 @@ class BengkelController extends Controller
             'kecamatan_id' => 'required|exists:kecamatans,id',
             'kelurahan_id' => 'required|exists:kelurahans,id',
             'image' => 'nullable|image|max:2048',
+
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
+
             'specialist_ids' => 'required|array',
             'specialist_ids.*' => 'exists:specialists,id',
         ]);
@@ -166,6 +178,8 @@ class BengkelController extends Controller
             'pemilik_id' => Auth::id(),
             'kecamatan_id' => $request->kecamatan_id,
             'kelurahan_id' => $request->kelurahan_id,
+            'latitude' => $request->latitude,
+            'longitude' => $request->longitude,
         ]);
 
         $bengkel->specialists()->sync($request->specialist_ids);

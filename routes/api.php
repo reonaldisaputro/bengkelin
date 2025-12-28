@@ -30,16 +30,14 @@ use App\Http\Controllers\API\WithdrawRequestController;
 
 // ✅ Public (no auth)
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/register-owner', [AuthController::class, 'registerOwner']);
 Route::post('/login', [AuthController::class, 'login']);
-Route::post('/login-owner', [AuthController::class, 'loginOwner']);
 Route::post('/midtrans-callback', [CheckoutController::class, 'callback']);
 Route::post('/chatbot', [ChatbotController::class, 'handle']);
 Route::get('/home', [PageController::class, 'home']);
 Route::get('/products', [PageController::class, 'index']);
 Route::get('/products/{id}', [PageController::class, 'detailProduct']);
 
- Route::prefix('service')->group(function () {
+Route::prefix('service')->group(function () {
     Route::get('/', [ServiceController::class, 'index']);
     Route::get('/kecamatan', [ServiceController::class, 'getKecamatan']);
     Route::get('/kelurahan/{kecamatan_id}', [ServiceController::class, 'getKelurahans']);
@@ -50,13 +48,11 @@ Route::get('/products/{id}', [PageController::class, 'detailProduct']);
 
 
     Route::prefix('bengkel')->group(function () {
-        // Bengkel CRUD
+
         Route::get('/', [BengkelController::class, 'index']);
         Route::get('/list', [BengkelController::class, 'all']);
         Route::get('/nearby', [BengkelController::class, 'findNearby']);
-        Route::get('/', [BengkelController::class, 'index']);
         Route::get('/{id}', [BengkelController::class, 'show']);
-        Route::post('/', [BengkelController::class, 'store']);
         Route::get('/kelurahan/{kecamatan_id}', [BengkelController::class, 'getKelurahans']);
 
 
@@ -89,16 +85,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index']);
 
     Route::get('/jadwals', [JadwalController::class, 'index']);
-    Route::post('/jadwals', [JadwalController::class, 'store']);
-    Route::get('/jadwals/{id}', [JadwalController::class, 'show']);
-    Route::put('/jadwals/{id}', [JadwalController::class, 'update']);
-    Route::delete('/jadwals/{id}', [JadwalController::class, 'destroy']);
 
     Route::get('/layanans', [LayananController::class, 'index']);
-    Route::post('/layanans', [LayananController::class, 'store']);
     Route::get('/layanans/{id}', [LayananController::class, 'show']);
-    Route::put('/layanans/{id}', [LayananController::class, 'update']);
-    Route::delete('/layanans/{id}', [LayananController::class, 'destroy']);
 
     // Profile
     Route::get('/profile', [ProfileUserController::class, 'show']);
@@ -182,6 +171,10 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+
+Route::post('/register-owner', [AuthController::class, 'registerOwner']);
+Route::post('/login-owner', [AuthController::class, 'loginOwner']);
+
 Route::middleware('auth:owner-api')->group(function () {
     Route::get('/owner/profile', [AuthController::class, 'fetchOwner']);
     Route::post('/owner/logout', [AuthController::class, 'logoutOwner']);
@@ -191,65 +184,22 @@ Route::middleware('auth:owner-api')->group(function () {
         Route::put('/{id}', [BengkelController::class, 'update']);
         Route::delete('/{id}', [BengkelController::class, 'destroy']);
     });
+
+    Route::prefix('jadwals')->group(function () {
+        Route::post('/', [JadwalController::class, 'store']);
+        Route::get('/{id}', [JadwalController::class, 'show']);
+        Route::put('/{id}', [JadwalController::class, 'update']);
+        Route::delete('/{id}', [JadwalController::class, 'destroy']);
+    });
+
+    Route::prefix('layanans')->group(function(){
+        Route::get('/', [LayananController::class, 'index']);
+        Route::post('/', [LayananController::class, 'store']);
+        Route::get('/{id}', [LayananController::class, 'show']);
+        Route::put('/{id}', [LayananController::class, 'update']);
+        Route::delete('/{id}', [LayananController::class, 'destroy']);
+    });
+
 });
 
 Route::post('/midtrans-callback', [CheckoutController::class, 'callback']);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
- /*
-    |--------------------------------------------------------------------------
-    | Admin Routes
-    |--------------------------------------------------------------------------
-    */
-    // Route::prefix('admin')->group(function () {
-    //     // Dashboard
-    //     Route::get('/dashboard', [AdminController::class, 'dashboard']);
-
-    //     // Users
-    //     Route::get('/users', [AdminController::class, 'listUser']);
-    //     Route::get('/users/{id}', [AdminController::class, 'detailUser']);
-    //     Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
-
-    //     // Owners
-    //     Route::get('/owners', [AdminController::class, 'listOwner']);
-    //     Route::get('/owners/{id}', [AdminController::class, 'detailOwner']);
-    //     Route::delete('/owners/{id}', [AdminController::class, 'deleteOwner']);
-
-    //     // Bengkels (Admin View)
-    //     Route::get('/bengkels', [AdminController::class, 'listBengkel']);
-    //     Route::get('/bengkels/{id}', [AdminController::class, 'detailBengkel']);
-    //     Route::delete('/bengkels/{id}', [AdminController::class, 'deleteBengkel']);
-
-    //     // Bookings (Admin View)
-    //     Route::get('/bookings', [AdminController::class, 'listBooking']);
-    //     Route::get('/bookings/{id}', [AdminController::class, 'detailBooking']);
-
-    //     // Transactions (Admin View)
-    //     Route::get('/transactions', [AdminController::class, 'listTransaction']);
-    //     Route::get('/transactions/{id}', [AdminController::class, 'detailTransaction']);
-
-    //     // Pencairan
-    //     Route::get('/pencairan', [AdminPencairanController::class, 'index']);
-    //     Route::get('/pencairan/{id}', [AdminPencairanController::class, 'show']);
-    //     Route::put('/pencairan/{id}', [AdminPencairanController::class, 'update']);
-    // });
