@@ -179,6 +179,8 @@ Route::middleware('auth:owner-api')->group(function () {
     Route::get('/owner/profile', [AuthController::class, 'fetchOwner']);
     Route::post('/owner/logout', [AuthController::class, 'logoutOwner']);
 
+    Route::get('/my-bengkel', [BengkelController::class, 'myBengkel']);
+
     Route::prefix('bengkel')->group(function () {
         Route::get('/my-bengkel', [BengkelController::class, 'myBengkel']);
         Route::post('/', [BengkelController::class, 'store']);

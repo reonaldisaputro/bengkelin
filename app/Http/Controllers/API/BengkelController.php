@@ -97,7 +97,7 @@ class BengkelController extends Controller
             ->first();
 
         if (!$bengkel) {
-            return ResponseFormatter::error(null, 'Bengkel milik owner tidak ditemukan', 404);
+            return ResponseFormatter::error(null, 'Bengkelsadasds tidak ditemukan', 404);
         }
 
         // Tambahkan image_url
