@@ -77,6 +77,37 @@ class BengkelController extends Controller
         $bengkels = Bengkel::where('pemilik_id', Auth::id())->with('specialists')->get();
         return ResponseFormatter::success($bengkels, 'Data bengkel berhasil diambil');
     }
+
+    public function myBengkel(Request $request)
+    {
+        $owner = Auth::user(); // dari bearer token
+
+        if (!$owner) {
+            return ResponseFormatter::error(null, 'Unauthorized', 401);
+        }
+
+        $bengkel = Bengkel::with([
+                'specialists',
+                'kecamatan',
+                'kelurahan',
+                'products',
+                'jadwals'
+            ])
+            ->where('pemilik_id', $owner->id)
+            ->first();
+
+        if (!$bengkel) {
+            return ResponseFormatter::error(null, 'Bengkel milik owner tidak ditemukan', 404);
+        }
+
+        // Tambahkan image_url
+        if ($bengkel->image) {
+            $bengkel->image_url = url('images/' . $bengkel->image);
+        }
+
+        return ResponseFormatter::success($bengkel, 'Data bengkel owner berhasil diambil');
+    }
+
     
 
    public function show($id)

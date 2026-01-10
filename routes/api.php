@@ -180,6 +180,7 @@ Route::middleware('auth:owner-api')->group(function () {
     Route::post('/owner/logout', [AuthController::class, 'logoutOwner']);
 
     Route::prefix('bengkel')->group(function () {
+        Route::get('/my-bengkel', [BengkelController::class, 'myBengkel']);
         Route::post('/', [BengkelController::class, 'store']);
         Route::put('/{id}', [BengkelController::class, 'update']);
         Route::delete('/{id}', [BengkelController::class, 'destroy']);
