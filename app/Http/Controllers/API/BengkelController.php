@@ -80,7 +80,7 @@ class BengkelController extends Controller
 
     public function myBengkel(Request $request)
     {
-        $owner = Auth::user(); // dari bearer token
+        $owner = Auth::guard('owner-api')->user();
 
         if (!$owner) {
             return ResponseFormatter::error(null, 'Unauthorized', 401);
