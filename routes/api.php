@@ -21,6 +21,7 @@ use App\Http\Controllers\API\ProfileUserController;
 use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\ChatApiController;
 use App\Http\Controllers\API\WithdrawRequestController;
+use App\Http\Controllers\API\SpecialistController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,6 +37,10 @@ Route::post('/chatbot', [ChatbotController::class, 'handle']);
 Route::get('/home', [PageController::class, 'home']);
 Route::get('/products', [PageController::class, 'index']);
 Route::get('/products/{id}', [PageController::class, 'detailProduct']);
+
+// Specialists
+Route::get('/specialists', [SpecialistController::class, 'index']);
+Route::get('/specialists/{id}', [SpecialistController::class, 'show']);
 
 Route::prefix('service')->group(function () {
     Route::get('/', [ServiceController::class, 'index']);
