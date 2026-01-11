@@ -209,6 +209,14 @@ Route::middleware('auth:owner-api')->group(function () {
         Route::delete('/{id}', [LayananController::class, 'destroy']);
     });
 
+     Route::prefix('products-owner')->group(function(){
+        Route::get('/', [ProductController::class, 'index']);
+        Route::post('/', [ProductController::class, 'store']);
+        Route::get('/{id}', [ProductController::class, 'show']);
+        Route::put('/{id}', [ProductController::class, 'update']);
+        Route::delete('/{id}', [ProductController::class, 'destroy']);
+    });
+
 });
 
 Route::post('/midtrans-callback', [CheckoutController::class, 'callback']);
