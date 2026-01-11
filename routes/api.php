@@ -194,6 +194,7 @@ Route::middleware('auth:owner-api')->group(function () {
     });
 
     Route::prefix('jadwals')->group(function () {
+        Route::getCurrentRequest('/', [JadwalController::class, 'index']);
         Route::post('/', [JadwalController::class, 'store']);
         Route::get('/{id}', [JadwalController::class, 'show']);
         Route::put('/{id}', [JadwalController::class, 'update']);
