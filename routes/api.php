@@ -220,9 +220,9 @@ Route::middleware('auth:owner-api')->group(function () {
     Route::prefix('transaction-owner')->group(function(){
         Route::get('/', [BengkelTransactionController::class, 'index']);
         Route::post('/', [BengkelTransactionController::class, 'store']);
-        Route::get('/{id}', [ProductController::class, 'show']);
-        Route::put('/{id}', [ProductController::class, 'update']);
-        Route::delete('/{id}', [ProductController::class, 'destroy']);
+        Route::get('/{id}', [BengkelTransactionController::class, 'show']);
+        Route::put('/{id}', [BengkelTransactionController::class, 'update']);
+        Route::delete('/{id}', [BengkelTransactionController::class, 'destroy']);
     });
 
 });
