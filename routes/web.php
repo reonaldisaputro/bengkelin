@@ -235,6 +235,7 @@ Route::prefix('/owner')->middleware('auth:owner')->group(function () {
     Route::get('/transaction/{transaction}', [BengkelTransactionController::class, 'show'])->name('mitra.show.transaction');
     Route::get('/transaction/{id}/edit', [BengkelTransactionController::class, 'edit']);
     Route::put('/transaction/{id}', [BengkelTransactionController::class, 'update'])->name('updatetransaction');
+    
     Route::get('/transaction/add/{booking}', [BengkelTransactionController::class, 'create'])->name('mitra.add.transaction');
     Route::post('/transaction/{id}', [BengkelTransactionController::class, 'addToCart'])->name('add.to.cart');
     Route::delete('/transaction/cart/{id}', [BengkelTransactionController::class, 'removeFromCart'])->name('remove.from.cart');

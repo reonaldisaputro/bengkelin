@@ -217,6 +217,14 @@ Route::middleware('auth:owner-api')->group(function () {
         Route::delete('/{id}', [ProductController::class, 'destroy']);
     });
 
+    Route::prefix('transaction-owner')->group(function(){
+        Route::get('/', [BengkelTransactionController::class, 'index']);
+        Route::post('/', [BengkelTransactionController::class, 'store']);
+        Route::get('/{id}', [ProductController::class, 'show']);
+        Route::put('/{id}', [ProductController::class, 'update']);
+        Route::delete('/{id}', [ProductController::class, 'destroy']);
+    });
+
 });
 
 Route::post('/midtrans-callback', [CheckoutController::class, 'callback']);
