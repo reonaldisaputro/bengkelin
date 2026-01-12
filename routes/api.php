@@ -8,7 +8,7 @@ use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AdminPencairanController;
 use App\Http\Controllers\API\BengkelBookingController;
 use App\Http\Controllers\API\BengkelController;
-use App\Http\Controllers\Api\BengkelTransactionController;
+use App\Http\Controllers\API\BengkelTransactionController;
 use App\Http\Controllers\API\BookingController;
 use App\Http\Controllers\API\CartController;
 use App\Http\Controllers\API\ChatbotController;
