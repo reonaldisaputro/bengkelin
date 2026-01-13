@@ -22,6 +22,16 @@ class Bengkel extends Model
         // 'specialist_id',
     ];
 
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            return url('storage/bengkel/' . $this->image);
+        }
+        return null;
+    }
+
     public function layanans()
     {
         return $this->hasMany(Layanan::class);
