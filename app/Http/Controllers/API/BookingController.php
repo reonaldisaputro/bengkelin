@@ -114,4 +114,18 @@ class BookingController extends Controller
         return ResponseFormatter::success($bookings, 'List booking user berhasil diambil.');
     }
 
+    public function showUserBooking($id)
+    {
+        $booking = Booking::with(['bengkel', 'user', 'transactions'])
+            ->where('id', $id)
+            ->where('user_id', Auth::id())
+            ->first();
+
+        if (!$booking) {
+            return ResponseFormatter::error(null, 'Booking tidak ditemukan', 404);
+        }
+
+        return ResponseFormatter::success($booking, 'Detail booking berhasil diambil.');
+    }
+
 }
