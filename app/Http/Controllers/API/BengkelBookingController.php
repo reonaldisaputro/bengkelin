@@ -12,7 +12,6 @@ use App\Helpers\ResponseFormatter;
 
 class BengkelBookingController extends Controller
 {
-    // GET /api/bengkel/bookings
     public function index()
     {
         try {
@@ -35,7 +34,6 @@ class BengkelBookingController extends Controller
         }
     }
 
-    // GET /api/bengkel/bookings/{id}
     public function show($id)
     {
         $booking = Booking::with(['user', 'bengkel'])->find($id);
@@ -54,7 +52,6 @@ class BengkelBookingController extends Controller
         ], 'Detail booking berhasil diambil');
     }
 
-    // PUT /api/bengkel/bookings/{id}
     public function update(Request $request, $id)
     {
         $booking = Booking::with(['user', 'bengkel'])->find($id);
@@ -64,7 +61,7 @@ class BengkelBookingController extends Controller
         }
 
         $validated = $request->validate([
-            'booking_status' => 'required|in:pending,confirmed,cancelled,completed'
+            'booking_status' => 'required|in:Pending,Diterima,Ditolak,Selesai'
         ]);
 
         $booking->booking_status = $validated['booking_status'];
