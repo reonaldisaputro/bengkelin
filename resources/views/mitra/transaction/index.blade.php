@@ -42,6 +42,7 @@
                                                     <th>No.</th>
                                                     <th>Nama Pelanggan</th>
                                                     <th>Status Pembayaran</th>
+                                                    <th>Status Pengiriman</th>
                                                     <th>Total Harga</th>
                                                     <th>Action</th>
 
@@ -53,6 +54,7 @@
                                                         <td>{{ $loop->iteration }}</td>
                                                         <td>{{ $transaction->user->name }}</td>
                                                         <td>{{ $transaction->payment_status }}</td>
+                                                        <td>{{ $transaction->shipping_status }}</td>
                                                         <td>Rp{{ number_format($transaction->grand_total - ($transaction->ongkir + $transaction->administrasi)) }}
                                                         </td>
                                                         <td>
