@@ -122,4 +122,20 @@ class AdminController extends Controller
 
         return view('admin.detailtransaction', compact('transaction', 'details'));
     }
+
+    public function updatetransaction(Request $request, $id)
+    {
+        $request->validate([
+            'payment_status' => 'required|in:Pending,Success,Cancelled',
+            'shipping_status' => 'required|in:Pending,Processing,Shipped,Delivered,Cancelled'
+        ]);
+
+        $transaction = Transaction::findOrFail($id);
+        $transaction->payment_status = $request->payment_status;
+        $transaction->shipping_status = $request->shipping_status;
+        $transaction->save();
+
+        return redirect()->route('admin.show.transaction', $transaction->id)
+            ->with('success', 'Status transaksi berhasil diupdate!');
+    }
 }

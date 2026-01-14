@@ -187,6 +187,7 @@ Route::middleware(['auth:admin'])->group(function () {
     // transaction
     Route::get('/admin-transaction', [AdminController::class, 'listtransaction'])->name('showlisttransaction');
     Route::get('/admin-transaction/{transaction}', [AdminController::class, 'detailtransaction'])->name('admin.show.transaction');
+    Route::put('/admin-transaction/{id}', [AdminController::class, 'updatetransaction'])->name('admin.update.transaction');
     // pencairan
     Route::get('/admin-pencairan', [AdminPencairanController::class, 'index'])->name('admin.pencairan');
     Route::get('/admin-pencairan/{id}/edit', [AdminPencairanController::class, 'edit'])->name('admin.pencairan.edit');
