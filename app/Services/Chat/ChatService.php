@@ -46,8 +46,14 @@ class ChatService
     /**
      * Main entry point - handle incoming message
      */
-    public function handleMessage(User $user, string $message, ?string $payload = null): array
-    {
+    public function handleMessage(
+        User $user,
+        string $message,
+        ?string $payload = null,
+        $latitude = null,
+        $longitude = null,
+        $radius = 10
+    ): array {
         $message = trim($message);
         $payload = $payload ? trim($payload) : null;
 
@@ -69,7 +75,7 @@ class ChatService
         $matches = $intentResult['matches'];
 
         // Route to appropriate handler based on intent
-        return $this->routeToHandler($user, $message, $payload, $intent, $matches);
+        return $this->routeToHandler($user, $message, $payload, $intent, $matches, $latitude, $longitude, $radius);
     }
 
     /**
@@ -86,8 +92,16 @@ class ChatService
     /**
      * Route to the appropriate handler based on detected intent
      */
-    private function routeToHandler(User $user, string $message, ?string $payload, ?string $intent, array $matches): array
-    {
+    private function routeToHandler(
+        User $user,
+        string $message,
+        ?string $payload,
+        ?string $intent,
+        array $matches,
+        $latitude = null,
+        $longitude = null,
+        $radius = 10
+    ): array {
         return match ($intent) {
             // Menu
             'menu' => $this->menuHandler->handle($user),
@@ -119,12 +133,12 @@ class ChatService
             'add_to_cart' => $this->handleAddToCart($user, $matches),
 
             // Nearby Bengkel
-            'nearby', 'nearby_prompt' => $this->nearbyHandler->handle($user),
+            'nearby', 'nearby_prompt' => $this->handleNearby($user, $message, $latitude, $longitude, $radius),
             'nearby_list' => $this->nearbyHandler->handleList($user),
             'nearby_with_coords' => $this->handleNearbyWithCoords($user, $message),
 
             // Default / Fallback
-            default => $this->handleFallback($user, $message, $payload),
+            default => $this->handleFallback($user, $message, $payload, $latitude, $longitude, $radius),
         };
     }
 
@@ -214,7 +228,27 @@ class ChatService
     }
 
     /**
-     * Handle nearby with coordinates
+     * Handle nearby bengkel - with optional lat/long params or from message
+     */
+    private function handleNearby(User $user, string $message, $latitude = null, $longitude = null, $radius = 10): array
+    {
+        // If lat/long provided as parameters, use them
+        if ($latitude !== null && $longitude !== null) {
+            return $this->nearbyHandler->handleWithCoords($user, (float) $latitude, (float) $longitude, (float) $radius);
+        }
+
+        // Otherwise, try to parse from message
+        $coords = $this->nearbyHandler->parseCoordinates($message);
+        if ($coords) {
+            return $this->nearbyHandler->handleWithCoords($user, $coords['lat'], $coords['lng'], $radius);
+        }
+
+        // Show instructions
+        return $this->nearbyHandler->handle($user);
+    }
+
+    /**
+     * Handle nearby with coordinates from message
      */
     private function handleNearbyWithCoords(User $user, string $message): array
     {
@@ -240,8 +274,13 @@ class ChatService
     /**
      * Handle fallback - try to understand message or show menu
      */
-    private function handleFallback(User $user, string $message, ?string $payload): array
+    private function handleFallback(User $user, string $message, ?string $payload, $latitude = null, $longitude = null, $radius = 10): array
     {
+        // If lat/long provided, treat as nearby request
+        if ($latitude !== null && $longitude !== null) {
+            return $this->nearbyHandler->handleWithCoords($user, (float) $latitude, (float) $longitude, (float) $radius);
+        }
+
         // Try product search if message looks like a search query
         $keyword = $this->productHandler->extractKeyword($message);
         if ($keyword) {
@@ -259,7 +298,7 @@ class ChatService
         // Try nearby if message contains coordinates
         $coords = $this->nearbyHandler->parseCoordinates($message);
         if ($coords) {
-            return $this->nearbyHandler->handleWithCoords($user, $coords['lat'], $coords['lng']);
+            return $this->nearbyHandler->handleWithCoords($user, $coords['lat'], $coords['lng'], $radius);
         }
 
         // Show fallback with menu

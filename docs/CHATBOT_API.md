@@ -45,7 +45,10 @@ POST /api/chat/send
 ```json
 {
   "message": "string",
-  "payload": "string"
+  "payload": "string",
+  "latitude": 0.0,
+  "longitude": 0.0,
+  "radius": 10
 }
 ```
 
@@ -53,8 +56,13 @@ POST /api/chat/send
 |-------|------|----------|-------------|
 | message | string | No | Pesan teks dari user |
 | payload | string | No | Payload dari quick reply button |
+| latitude | float | No | Latitude untuk pencarian bengkel terdekat |
+| longitude | float | No | Longitude untuk pencarian bengkel terdekat |
+| radius | float | No | Radius pencarian dalam km (default: 10) |
 
-> **Note:** Minimal salah satu dari `message` atau `payload` harus diisi. Jika keduanya kosong, chatbot akan menampilkan menu utama.
+> **Note:**
+> - Minimal salah satu dari `message` atau `payload` harus diisi. Jika keduanya kosong, chatbot akan menampilkan menu utama.
+> - `latitude` dan `longitude` adalah **optional parameters** khusus untuk fitur **Bengkel Terdekat**. Jika disertakan, chatbot akan langsung mencari bengkel dalam radius tertentu tanpa perlu parsing dari text.
 
 #### Response
 
@@ -610,20 +618,36 @@ Pencarian produk spare part.
 
 Cari bengkel berdasarkan lokasi.
 
-**Trigger:**
+**Trigger (Ask for location):**
 ```json
 { "payload": "nearby_prompt" }
 // atau
 { "message": "bengkel terdekat" }
 ```
 
-**With Coordinates:**
+**Method 1: With Coordinates in Message (Text-based)**
 ```json
 { "message": "bengkel terdekat -6.2088,106.8456" }
 ```
 
+**Method 2: With Parameters (Recommended for Flutter)** ⭐
+```json
+{
+  "payload": "nearby_prompt",
+  "latitude": -6.2088,
+  "longitude": 106.8456,
+  "radius": 5
+}
+```
+
+> **Keuntungan Method 2:**
+> - Lebih mudah untuk Flutter developer (langsung kirim dari GPS)
+> - Tidak perlu parse text
+> - Bisa custom radius pencarian (default: 10 km)
+> - Sama seperti API `/api/bengkel/nearby`
+
 **Response:**
-Cards dengan bengkel terdekat + jarak dalam km.
+Cards dengan bengkel terdekat + jarak dalam km, sorted by distance.
 
 ---
 
@@ -771,7 +795,20 @@ class ChatService {
   Future<ChatResponse> sendMessage({
     String? message,
     String? payload,
+    double? latitude,
+    double? longitude,
+    double? radius,
   }) async {
+    final Map<String, dynamic> body = {
+      'message': message ?? '',
+      'payload': payload ?? '',
+    };
+
+    // Add location params if provided (for nearby bengkel feature)
+    if (latitude != null) body['latitude'] = latitude;
+    if (longitude != null) body['longitude'] = longitude;
+    if (radius != null) body['radius'] = radius;
+
     final response = await http.post(
       Uri.parse('$baseUrl/chat/send'),
       headers: {
@@ -779,10 +816,7 @@ class ChatService {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
       },
-      body: jsonEncode({
-        'message': message ?? '',
-        'payload': payload ?? '',
-      }),
+      body: jsonEncode(body),
     );
 
     if (response.statusCode == 200) {
@@ -949,6 +983,80 @@ Widget buildMessage(ChatMessage message) {
 }
 ```
 
+### Practical Usage Examples
+
+#### Example 1: Nearby Bengkel with GPS Location
+
+```dart
+// Get user's current location
+Position position = await Geolocator.getCurrentPosition();
+
+// Send to chatbot with location params
+final response = await chatService.sendMessage(
+  payload: 'nearby_prompt',
+  latitude: position.latitude,
+  longitude: position.longitude,
+  radius: 5, // Search within 5km
+);
+
+// Display response
+setState(() {
+  messages.add(response);
+});
+```
+
+#### Example 2: Quick Reply Button Click
+
+```dart
+// User clicks a quick reply button
+void onQuickReplyTap(QuickReply reply) {
+  if (reply.type == 'message') {
+    sendMessage(message: reply.message ?? reply.payload);
+  } else {
+    sendMessage(payload: reply.payload);
+  }
+}
+```
+
+#### Example 3: Text Input from User
+
+```dart
+// User types and sends a message
+void onSendText(String text) async {
+  final response = await chatService.sendMessage(
+    message: text,
+  );
+
+  setState(() {
+    messages.add(response);
+  });
+}
+```
+
+#### Example 4: Booking Flow with Cancel Button
+
+```dart
+// Show cancel button when in active flow
+Widget buildChatInput() {
+  return Row(
+    children: [
+      // Show cancel button if flow is active
+      if (currentResponse?.flow?.active == true)
+        IconButton(
+          icon: Icon(Icons.close),
+          onPressed: () => sendMessage(payload: 'cancel'),
+        ),
+
+      Expanded(child: TextField(...)),
+      IconButton(
+        icon: Icon(Icons.send),
+        onPressed: () => onSendText(_controller.text),
+      ),
+    ],
+  );
+}
+```
+
 ---
 
 ## Testing Checklist
@@ -979,6 +1087,14 @@ Widget buildMessage(ChatMessage message) {
 - [ ] Status dengan emoji yang benar
 - [ ] Cancel booking (hanya Pending)
 
+### Nearby Bengkel
+- [ ] Request dengan payload nearby_prompt tanpa params menampilkan instruksi
+- [ ] Request dengan latitude & longitude params menampilkan bengkel terdekat
+- [ ] Bengkel sorted by distance dengan tampilan jarak
+- [ ] Custom radius berfungsi (default 10km)
+- [ ] Handle tidak ada bengkel dalam radius
+- [ ] Bengkel cards clickable dengan actions
+
 ### Rating
 - [ ] List item belum dirating
 - [ ] Submit rating dengan format benar
@@ -1001,6 +1117,7 @@ Widget buildMessage(ChatMessage message) {
 - Added rich response types (carousel, product_card, booking_card, time_picker)
 - Added natural language understanding with fuzzy matching
 - Added context management for conversations
+- Added **latitude, longitude, radius** parameters for nearby bengkel (direct GPS support)
 - Refactored to service-based architecture
 
 ### v1.0.0 (Previous)

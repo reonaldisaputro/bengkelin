@@ -37,8 +37,20 @@ class ChatApiController extends Controller
         // Handle empty payload
         $payload = $payload === '' ? null : $payload;
 
+        // Optional location parameters for nearby bengkel
+        $latitude = $request->input('latitude');
+        $longitude = $request->input('longitude');
+        $radius = $request->input('radius', 10); // Default 10km
+
         try {
-            $response = $this->chatService->handleMessage($user, $message, $payload);
+            $response = $this->chatService->handleMessage(
+                $user,
+                $message,
+                $payload,
+                $latitude,
+                $longitude,
+                $radius
+            );
             return ResponseFormatter::success($response, 'ok');
         } catch (\Exception $e) {
             // Log error for debugging
@@ -46,6 +58,8 @@ class ChatApiController extends Controller
                 'user_id' => $user->id,
                 'message' => $message,
                 'payload' => $payload,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
                 'trace' => $e->getTraceAsString(),
             ]);
 

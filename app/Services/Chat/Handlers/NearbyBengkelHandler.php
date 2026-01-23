@@ -28,20 +28,28 @@ class NearbyBengkelHandler
     /**
      * Handle nearby with coordinates
      */
-    public function handleWithCoords(User $user, float $lat, float $lng, int $limit = 3): array
+    public function handleWithCoords(User $user, float $lat, float $lng, float $radius = 10): array
     {
-        $bengkels = Bengkel::select('*')
+        // Use haversine formula (same as BengkelController)
+        $bengkels = Bengkel::select('bengkels.*')
             ->selectRaw(
-                '(111.045 * DEGREES(ACOS(LEAST(1.0, COS(RADIANS(?)) * COS(RADIANS(latitude)) * COS(RADIANS(longitude) - RADIANS(?)) + SIN(RADIANS(?)) * SIN(RADIANS(latitude)))))) AS distance_km',
+                '( 6371 * acos( cos( radians(?) ) *
+                    cos( radians( latitude ) )
+                    * cos( radians( longitude ) - radians(?)
+                    ) + sin( radians(?) ) *
+                    sin( radians( latitude ) ) )
+                ) AS distance_km',
                 [$lat, $lng, $lat]
             )
-            ->orderBy('distance_km')
-            ->limit($limit)
+            ->whereNotNull(['latitude', 'longitude'])
+            ->having('distance_km', '<=', $radius)
+            ->orderBy('distance_km', 'asc')
+            ->limit(10) // Show max 10 results
             ->get();
 
         if ($bengkels->isEmpty()) {
             return ResponseBuilder::make()
-                ->text('Tidak ada bengkel terdekat yang ditemukan.')
+                ->text("Tidak ada bengkel ditemukan dalam radius {$radius} km dari lokasi Anda.")
                 ->quickReplies([
                     ['title' => 'Coba Lokasi Lain', 'payload' => 'nearby_prompt'],
                     ['title' => 'Menu Utama', 'payload' => 'menu'],
@@ -51,7 +59,7 @@ class NearbyBengkelHandler
         }
 
         $builder = ResponseBuilder::make()
-            ->text("Ditemukan {$bengkels->count()} bengkel terdekat dari lokasi Anda:");
+            ->text("Ditemukan {$bengkels->count()} bengkel dalam radius {$radius} km dari lokasi Anda:");
 
         foreach ($bengkels as $b) {
             $builder->bengkelCard(
