@@ -35,7 +35,15 @@ class Product extends Model
     }
 
     // OPSIONAL: ringkasan rating siap pakai
-    protected $appends = ['rating_summary'];
+    protected $appends = ['rating_summary', 'image_url'];
+
+    public function getImageUrlAttribute()
+    {
+        if ($this->image) {
+            return url('images/' . $this->image);
+        }
+        return null;
+    }
 
     public function getRatingSummaryAttribute()
     {
