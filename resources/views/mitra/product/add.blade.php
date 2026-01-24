@@ -44,6 +44,15 @@
                             <textarea rows="5" type="text" class="form-control" id="description" name="description"
                                 placeholder="Deskripsi produk" rows="5"></textarea>
                         </div>
+                        <div class="form-group">
+                            <label for="category_id">Kategori Produk</label>
+                            <select class="form-control" id="category_id" name="category_id">
+                                <option value="">-- Pilih Kategori --</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                         <div class="row">
                             <div class="col">
                                 <div class="form-group">

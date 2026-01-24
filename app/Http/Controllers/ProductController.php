@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Bengkel;
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,7 +23,8 @@ class ProductController extends Controller
 
     public function create()
     {
-        return view("mitra.product.add");
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        return view("mitra.product.add", compact('categories'));
     }
 
     public function store(Request $request)
@@ -35,6 +37,7 @@ class ProductController extends Controller
         $bengkel_id = Bengkel::where("pemilik_id", $owner_id)->first()->id;
         $products = new Product();
         $products->bengkel_id = $bengkel_id;
+        $products->category_id = $request->category_id;
         $products->image = $imageName;
         $products->name = $request->name;
         $products->description = $request->description;
@@ -49,7 +52,8 @@ class ProductController extends Controller
     public function edit($id)
     {
         $product = Product::findOrFail($id);
-        return view('mitra.product.edit', compact('product'));
+        $categories = Category::where('is_active', true)->orderBy('name')->get();
+        return view('mitra.product.edit', compact('product', 'categories'));
     }
 
     public function update(Request $request, $id)
@@ -64,6 +68,7 @@ class ProductController extends Controller
             $product->image = $imageName;
         }
 
+        $product->category_id = $request->category_id;
         $product->name = $request->name;
         $product->description = $request->description;
         $product->price = $request->price;
