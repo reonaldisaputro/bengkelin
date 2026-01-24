@@ -65,9 +65,66 @@ class BengkelController extends Controller
         return ResponseFormatter::success($bengkels, 'Bengkel terdekat berhasil ditemukan');
     }
 
-    public function all()
+    /**
+     * Get all bengkels with filters
+     *
+     * Query params:
+     * - keyword: string (search by name, description, alamat)
+     * - specialist_id: int (filter by specialist)
+     * - kecamatan_id: int (filter by kecamatan)
+     * - kelurahan_id: int (filter by kelurahan)
+     * - sort_by: string (name, created_at)
+     * - sort_order: string (asc, desc)
+     * - per_page: int (default: all, set to paginate)
+     */
+    public function all(Request $request)
     {
-        $bengkels = Bengkel::with(['specialists', 'kecamatan', 'kelurahan'])->get();
+        $query = Bengkel::with(['specialists', 'kecamatan', 'kelurahan']);
+
+        // Search by keyword (name, description, alamat)
+        if ($request->filled('keyword')) {
+            $keyword = $request->query('keyword');
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'LIKE', '%' . $keyword . '%')
+                  ->orWhere('description', 'LIKE', '%' . $keyword . '%')
+                  ->orWhere('alamat', 'LIKE', '%' . $keyword . '%');
+            });
+        }
+
+        // Filter by specialist
+        if ($request->filled('specialist_id')) {
+            $specialistId = $request->query('specialist_id');
+            $query->whereHas('specialists', function ($q) use ($specialistId) {
+                $q->where('specialists.id', $specialistId);
+            });
+        }
+
+        // Filter by kecamatan
+        if ($request->filled('kecamatan_id')) {
+            $query->where('kecamatan_id', $request->query('kecamatan_id'));
+        }
+
+        // Filter by kelurahan
+        if ($request->filled('kelurahan_id')) {
+            $query->where('kelurahan_id', $request->query('kelurahan_id'));
+        }
+
+        // Sorting
+        $sortBy = $request->query('sort_by', 'name');
+        $sortOrder = $request->query('sort_order', 'asc');
+        $allowedSorts = ['name', 'created_at'];
+
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortOrder === 'desc' ? 'desc' : 'asc');
+        }
+
+        // Pagination (optional)
+        if ($request->filled('per_page')) {
+            $bengkels = $query->paginate($request->query('per_page'));
+        } else {
+            $bengkels = $query->get();
+        }
+
         return ResponseFormatter::success($bengkels, 'Daftar semua bengkel berhasil diambil');
     }
 
