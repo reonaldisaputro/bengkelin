@@ -8,6 +8,7 @@ use App\Http\Controllers\BengkelController;
 use App\Http\Controllers\BengkelTransactionController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
@@ -192,6 +193,13 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin-pencairan', [AdminPencairanController::class, 'index'])->name('admin.pencairan');
     Route::get('/admin-pencairan/{id}/edit', [AdminPencairanController::class, 'edit'])->name('admin.pencairan.edit');
     Route::put('/admin-pencairan/{id}', [AdminPencairanController::class, 'update'])->name('admin.pencairan.update');
+    // category
+    Route::get('/admin-category', [CategoryController::class, 'index'])->name('admin.category.index');
+    Route::get('/admin-category/create', [CategoryController::class, 'create'])->name('admin.category.create');
+    Route::post('/admin-category', [CategoryController::class, 'store'])->name('admin.category.store');
+    Route::get('/admin-category/{id}/edit', [CategoryController::class, 'edit'])->name('admin.category.edit');
+    Route::put('/admin-category/{id}', [CategoryController::class, 'update'])->name('admin.category.update');
+    Route::delete('/admin-category/{id}', [CategoryController::class, 'destroy'])->name('admin.category.destroy');
 });
 
 // BENGKEL

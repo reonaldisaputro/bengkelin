@@ -12,6 +12,7 @@ class Product extends Model
     protected $fillable = [
         'name',
         'bengkel_id',
+        'category_id',
         'image',
         'description',
         'price',
@@ -21,6 +22,11 @@ class Product extends Model
     public function bengkel()
     {
         return $this->belongsTo(Bengkel::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function ratings()

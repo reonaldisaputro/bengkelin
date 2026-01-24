@@ -83,6 +83,18 @@
                     </a>
                 </li>
 
+                <li class="nav-header">MASTER DATA</li>
+
+                <li class="nav-item">
+                    <a href="{{ route('admin.category.index') }}" class="nav-link">
+                        <i class="nav-icon fas fa-tags"></i>
+                        <p>
+                            Kategori Produk
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                </li>
+
                 <li class="nav-item">
                     <a href="{{ route('admin.pencairan') }}" class="nav-link">
                         <i class="nav-icon fas fa-users"></i>
