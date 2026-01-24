@@ -22,6 +22,7 @@ use App\Http\Controllers\API\ServiceController;
 use App\Http\Controllers\API\ChatApiController;
 use App\Http\Controllers\API\WithdrawRequestController;
 use App\Http\Controllers\API\SpecialistController;
+use App\Http\Controllers\API\CategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -41,6 +42,11 @@ Route::get('/products/{id}', [PageController::class, 'detailProduct']);
 // Specialists
 Route::get('/specialists', [SpecialistController::class, 'index']);
 Route::get('/specialists/{id}', [SpecialistController::class, 'show']);
+
+// Categories
+Route::get('/categories', [CategoryController::class, 'index']);
+Route::get('/categories/{id}', [CategoryController::class, 'show']);
+Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
 
 Route::prefix('service')->group(function () {
     Route::get('/', [ServiceController::class, 'index']);

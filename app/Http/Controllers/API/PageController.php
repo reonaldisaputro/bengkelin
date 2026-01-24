@@ -23,19 +23,61 @@ class PageController extends Controller
     }
 
     /**
-     * Tampilkan daftar produk, bisa dengan pencarian
+     * Tampilkan daftar produk, bisa dengan pencarian dan filter kategori
+     *
+     * Query params:
+     * - keyword: string (search by name/description)
+     * - category_id: int (filter by category)
+     * - bengkel_id: int (filter by bengkel)
+     * - min_price: int (minimum price)
+     * - max_price: int (maximum price)
+     * - sort_by: string (name, price, created_at)
+     * - sort_order: string (asc, desc)
+     * - per_page: int (default 10)
      */
     public function index(Request $request)
     {
-        $keyword = $request->query('keyword');
+        $query = Product::with(['bengkel', 'category']);
 
-        $query = Product::with('bengkel');
-
-        if ($keyword) {
-            $query->where('name', 'LIKE', '%' . $keyword . '%');
+        // Search by keyword (name or description)
+        if ($request->filled('keyword')) {
+            $keyword = $request->query('keyword');
+            $query->where(function ($q) use ($keyword) {
+                $q->where('name', 'LIKE', '%' . $keyword . '%')
+                  ->orWhere('description', 'LIKE', '%' . $keyword . '%');
+            });
         }
 
-        $products = $query->paginate(10);
+        // Filter by category
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->query('category_id'));
+        }
+
+        // Filter by bengkel
+        if ($request->filled('bengkel_id')) {
+            $query->where('bengkel_id', $request->query('bengkel_id'));
+        }
+
+        // Filter by price range
+        if ($request->filled('min_price')) {
+            $query->where('price', '>=', $request->query('min_price'));
+        }
+        if ($request->filled('max_price')) {
+            $query->where('price', '<=', $request->query('max_price'));
+        }
+
+        // Sorting
+        $sortBy = $request->query('sort_by', 'created_at');
+        $sortOrder = $request->query('sort_order', 'desc');
+        $allowedSorts = ['name', 'price', 'created_at'];
+
+        if (in_array($sortBy, $allowedSorts)) {
+            $query->orderBy($sortBy, $sortOrder === 'asc' ? 'asc' : 'desc');
+        }
+
+        // Pagination
+        $perPage = $request->query('per_page', 10);
+        $products = $query->paginate($perPage);
 
         return ResponseFormatter::success($products, 'Daftar produk berhasil diambil.');
     }
