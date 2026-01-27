@@ -118,9 +118,9 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('/chat/send', [ChatApiController::class, 'send']);
 
-    Route::get('/', [WithdrawRequestController::class, 'index']);
-    Route::post('/', [WithdrawRequestController::class, 'store']);
-    Route::get('/{id}', [WithdrawRequestController::class, 'show']);
+    Route::get('/withdraw-requests', [WithdrawRequestController::class, 'index']);
+    Route::post('/withdraw-requests', [WithdrawRequestController::class, 'store']);
+    Route::get('/withdraw-requests/{id}', [WithdrawRequestController::class, 'show']);
 
     /*
     |--------------------------------------------------------------------------
