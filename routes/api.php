@@ -143,6 +143,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Transactions Mitra
         Route::get('/transactions', [BengkelTransactionController::class, 'index']);
+        Route::get('/transactions/create/{bookingId}', [BengkelTransactionController::class, 'create']);
         Route::get('/transactions/{id}', [BengkelTransactionController::class, 'show']);
         Route::put('/transactions/{id}', [BengkelTransactionController::class, 'update']);
 

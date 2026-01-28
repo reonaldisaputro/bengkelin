@@ -66,6 +66,38 @@ class BengkelTransactionController extends Controller
         return ResponseFormatter::success($transaction, 'Status pengiriman berhasil diperbarui');
     }
 
+    public function create($bookingId)
+    {
+        $ownerId = Auth::id();
+        $bengkel = Bengkel::where('pemilik_id', $ownerId)->first();
+
+        if (!$bengkel) {
+            return ResponseFormatter::error(null, 'Bengkel tidak ditemukan', 404);
+        }
+
+        $booking = Booking::find($bookingId);
+
+        if (!$booking) {
+            return ResponseFormatter::error(null, 'Booking tidak ditemukan', 404);
+        }
+
+        $products = Product::where('bengkel_id', $bengkel->id)->get();
+        $services = Layanan::where('bengkel_id', $bengkel->id)->get();
+        $carts = BengkelCart::with(['product', 'layanan'])
+            ->where('booking_id', $bookingId)
+            ->get();
+
+        $totalPrice = $carts->sum(fn($cart) => $cart->price * $cart->quantity);
+
+        return ResponseFormatter::success([
+            'booking' => $booking,
+            'products' => $products,
+            'services' => $services,
+            'carts' => $carts,
+            'total_price' => $totalPrice,
+        ], 'Data untuk membuat transaksi berhasil diambil');
+    }
+
     public function cartAdd(Request $request)
     {
         $request->validate([
