@@ -17,7 +17,7 @@ class ProductController extends Controller
         $ownerId = Auth::id();
         $bengkelIds = Bengkel::where('pemilik_id', $ownerId)->pluck('id');
 
-        $products = Product::with('bengkel')
+        $products = Product::with(['bengkel', 'category'])
             ->whereIn('bengkel_id', $bengkelIds)
             ->get();
 
@@ -28,6 +28,7 @@ class ProductController extends Controller
     {
         $request->validate([
             'name'        => 'required|string',
+            'category_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string',
             'price'       => 'required|numeric',
             'weight'      => 'required|numeric',
@@ -46,6 +47,7 @@ class ProductController extends Controller
 
         $product = Product::create([
             'bengkel_id'  => $bengkelId,
+            'category_id' => $request->category_id,
             'image'       => $imageName,
             'name'        => $request->name,
             'description' => $request->description,
@@ -59,7 +61,7 @@ class ProductController extends Controller
 
     public function show($id)
     {
-        $product = Product::with('bengkel')->find($id);
+        $product = Product::with(['bengkel', 'category'])->find($id);
 
         if (!$product) {
             return ResponseFormatter::error(null, 'Produk tidak ditemukan', 404);
@@ -74,6 +76,7 @@ class ProductController extends Controller
 
         $product->update([
             'name'        => $request->name ?? $product->name,
+            'category_id' => $request->category_id ?? $product->category_id,
             'description' => $request->description ?? $product->description,
             'price'       => $request->price ?? $product->price,
             'weight'      => $request->weight ?? $product->weight,
