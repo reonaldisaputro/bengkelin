@@ -36,7 +36,7 @@ class BengkelBookingController extends Controller
 
     public function show($id)
     {
-        $booking = Booking::with(['user', 'bengkel'])->find($id);
+        $booking = Booking::with(['user', 'bengkel', 'transactions'])->find($id);
 
         if (!$booking) {
             return ResponseFormatter::error(null, 'Booking tidak ditemukan', 404);
