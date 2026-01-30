@@ -149,7 +149,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // Cart Mitra
         Route::post('/cart/add', [BengkelTransactionController::class, 'cartAdd']);
-        Route::delete('/cart/{id}', [BengkelTransactionController::class, 'cartRemove']);
+        Route::delete('/cart/{cartId}', [BengkelTransactionController::class, 'cartRemove']);
 
         // Checkout Mitra
         Route::post('/checkout', [BengkelTransactionController::class, 'checkout']);
