@@ -23,6 +23,8 @@ use App\Http\Controllers\API\ChatApiController;
 use App\Http\Controllers\API\WithdrawRequestController;
 use App\Http\Controllers\API\SpecialistController;
 use App\Http\Controllers\API\CategoryController;
+use App\Http\Controllers\API\ForgotPasswordUserController;
+use App\Http\Controllers\API\ForgotPasswordOwnerController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,6 +40,20 @@ Route::post('/chatbot', [ChatbotController::class, 'handle']);
 Route::get('/home', [PageController::class, 'home']);
 Route::get('/products', [PageController::class, 'index']);
 Route::get('/products/{id}', [PageController::class, 'detailProduct']);
+
+// Forgot Password - User
+Route::prefix('user/forgot-password')->group(function () {
+    Route::post('/send-otp', [ForgotPasswordUserController::class, 'sendOtp']);
+    Route::post('/verify-otp', [ForgotPasswordUserController::class, 'verifyOtp']);
+    Route::post('/reset-password', [ForgotPasswordUserController::class, 'resetPassword']);
+});
+
+// Forgot Password - Owner
+Route::prefix('owner/forgot-password')->group(function () {
+    Route::post('/send-otp', [ForgotPasswordOwnerController::class, 'sendOtp']);
+    Route::post('/verify-otp', [ForgotPasswordOwnerController::class, 'verifyOtp']);
+    Route::post('/reset-password', [ForgotPasswordOwnerController::class, 'resetPassword']);
+});
 
 // Specialists
 Route::get('/specialists', [SpecialistController::class, 'index']);
