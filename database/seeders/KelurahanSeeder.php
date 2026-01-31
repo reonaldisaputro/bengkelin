@@ -66,7 +66,7 @@ class KelurahanSeeder extends Seeder
             // Kecamatan Setu
             ['kecamatan_id' => 7, 'name' => 'Bakti Jaya'],
             ['kecamatan_id' => 7, 'name' => 'Keranggan'],
-            ['kecamatan_id' => 7, 'name' => 'Kranggan'],
+            ['kecamatan_id' => 7, 'name' => 'Kademangan'],
             ['kecamatan_id' => 7, 'name' => 'Muncul'],
             ['kecamatan_id' => 7, 'name' => 'Setu'],
         ];
