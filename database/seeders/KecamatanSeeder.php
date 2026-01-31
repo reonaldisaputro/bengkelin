@@ -22,6 +22,7 @@ class KecamatanSeeder extends Seeder
             ['name' => 'Pondok Aren'],
             ['name' => 'Serpong'],
             ['name' => 'Serpong Utara'],
+            ['name' => 'Setu'],
         ];
 
         DB::table('kecamatans')->insert($kecamatans);

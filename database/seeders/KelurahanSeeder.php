@@ -63,7 +63,12 @@ class KelurahanSeeder extends Seeder
             ['kecamatan_id' => 6, 'name' => 'Pakulonan'],
             ['kecamatan_id' => 6, 'name' => 'Pondok Jagung'],
             ['kecamatan_id' => 6, 'name' => 'Pondok Jagung Timur'],
-            // Tambahkan data kelurahan lainnya di sini
+            // Kecamatan Setu
+            ['kecamatan_id' => 7, 'name' => 'Bakti Jaya'],
+            ['kecamatan_id' => 7, 'name' => 'Keranggan'],
+            ['kecamatan_id' => 7, 'name' => 'Kranggan'],
+            ['kecamatan_id' => 7, 'name' => 'Muncul'],
+            ['kecamatan_id' => 7, 'name' => 'Setu'],
         ];
 
         DB::table('kelurahans')->insert($kelurahans);
