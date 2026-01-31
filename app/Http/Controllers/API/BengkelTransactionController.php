@@ -167,76 +167,80 @@ class BengkelTransactionController extends Controller
 
     public function checkout()
     {
-        $ownerId = Auth::id();
-        $bengkel = Bengkel::where('pemilik_id', $ownerId)->first();
+        try {
+            $ownerId = Auth::id();
+            $bengkel = Bengkel::where('pemilik_id', $ownerId)->first();
 
-        if (!$bengkel) {
-            return ResponseFormatter::error(null, 'Bengkel tidak ditemukan', 404);
-        }
+            if (!$bengkel) {
+                return ResponseFormatter::error(null, 'Bengkel tidak ditemukan', 404);
+            }
 
-        $carts = BengkelCart::with(['product', 'layanan', 'user', 'bengkel'])
-            ->where('bengkel_id', $bengkel->id)
-            ->get();
+            $carts = BengkelCart::with(['product', 'layanan', 'user', 'bengkel'])
+                ->where('bengkel_id', $bengkel->id)
+                ->get();
 
-        if ($carts->isEmpty()) {
-            return ResponseFormatter::error(null, 'Keranjang kosong', 400);
-        }
+            if ($carts->isEmpty()) {
+                return ResponseFormatter::error(null, 'Keranjang kosong', 400);
+            }
 
-        $user = $carts->first()->user;
-        $booking_id = $carts->first()->booking_id;
+            $user = $carts->first()->user;
+            $booking_id = $carts->first()->booking_id;
 
-        $totalPrice = $carts->sum(fn($cart) => $cart->price * $cart->quantity);
-        $administrasi = 0.05 * $totalPrice;
-        $grand_total = $totalPrice + $administrasi;
+            $totalPrice = $carts->sum(fn($cart) => $cart->price * $cart->quantity);
+            $administrasi = 0.05 * $totalPrice;
+            $grand_total = (int) round($totalPrice + $administrasi);
 
-        $transaction = Transaction::create([
-            'transaction_code' => 'TRANS-' . mt_rand(100, 999),
-            'user_id' => $user->id,
-            'bengkel_id' => $bengkel->id,
-            'booking_id' => $booking_id,
-            'payment_status' => 'pending',
-            'shipping_status' => null,
-            'ongkir' => 0,
-            'administrasi' => $administrasi,
-            'grand_total' => $grand_total,
-        ]);
-
-        foreach ($carts as $cart) {
-            DetailTransaction::create([
-                'transaction_id' => $transaction->id,
-                'product_id' => $cart->product_id,
-                'layanan_id' => $cart->layanan_id,
-                'qty' => $cart->quantity,
-                'product_price' => $cart->product?->price,
-                'layanan_price' => $cart->layanan?->price,
+            $transaction = Transaction::create([
+                'transaction_code' => 'TRANS-' . mt_rand(100, 999),
+                'user_id' => $user->id,
+                'bengkel_id' => $bengkel->id,
+                'booking_id' => $booking_id,
+                'payment_status' => 'pending',
+                'shipping_status' => null,
+                'ongkir' => 0,
+                'administrasi' => $administrasi,
+                'grand_total' => $grand_total,
             ]);
+
+            foreach ($carts as $cart) {
+                DetailTransaction::create([
+                    'transaction_id' => $transaction->id,
+                    'product_id' => $cart->product_id,
+                    'layanan_id' => $cart->layanan_id,
+                    'qty' => $cart->quantity,
+                    'product_price' => $cart->product?->price,
+                    'layanan_price' => $cart->layanan?->price,
+                ]);
+            }
+
+            BengkelCart::where('bengkel_id', $bengkel->id)->delete();
+
+            // Midtrans
+            Config::$serverKey = config('services.midtrans.serverKey');
+            Config::$isProduction = config('services.midtrans.isProduction');
+            Config::$isSanitized = config('services.midtrans.isSanitized');
+            Config::$is3ds = config('services.midtrans.is3ds');
+
+            $midtrans = [
+                'transaction_details' => [
+                    'order_id' => 'TRX-' . $transaction->id . '-' . time(),
+                    'gross_amount' => $grand_total,
+                ],
+                'customer_details' => [
+                    'first_name' => $user->name,
+                    'phone' => $user->phone_number,
+                    'email' => $user->email,
+                    'address' => $user->alamat,
+                ],
+                'enabled_payments' => ['gopay', 'permata_va', 'bank_transfer'],
+                'vtweb' => [],
+            ];
+
+            $paymentUrl = Snap::createTransaction($midtrans)->redirect_url;
+
+            return ResponseFormatter::success(['payment_url' => $paymentUrl], 'Transaksi berhasil dibuat, lanjutkan pembayaran');
+        } catch (\Exception $e) {
+            return ResponseFormatter::error(null, 'Checkout gagal: ' . $e->getMessage(), 500);
         }
-
-        BengkelCart::where('bengkel_id', $bengkel->id)->delete();
-
-        // Midtrans
-        Config::$serverKey = config('services.midtrans.serverKey');
-        Config::$isProduction = config('services.midtrans.isProduction');
-        Config::$isSanitized = config('services.midtrans.isSanitized');
-        Config::$is3ds = config('services.midtrans.is3ds');
-
-        $midtrans = [
-            'transaction_details' => [
-                'order_id' => $transaction->id,
-                'gross_amount' => $transaction->grand_total,
-            ],
-            'customer_details' => [
-                'first_name' => $user->name,
-                'phone' => $user->phone_number,
-                'email' => $user->email,
-                'address' => $user->alamat,
-            ],
-            'enabled_payments' => ['gopay', 'permata_va', 'bank_transfer'],
-            'vtweb' => [],
-        ];
-
-        $paymentUrl = Snap::createTransaction($midtrans)->redirect_url;
-
-        return ResponseFormatter::success(['payment_url' => $paymentUrl], 'Transaksi berhasil dibuat, lanjutkan pembayaran');
     }
 }
