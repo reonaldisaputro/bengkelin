@@ -9,6 +9,8 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
     <link href="{{ asset('/user-tamplate') }}/css/style.css" rel="stylesheet">
     <title>CARS | Login</title>
@@ -47,8 +49,13 @@
                 </div>
                 <div class="mb-3 form">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" name="password" id="password"
-                        class="form-control @error('password') is-invalid @enderror" required>
+                    <div class="input-group">
+                        <input type="password" name="password" id="password"
+                            class="form-control @error('password') is-invalid @enderror" required>
+                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                            <i class="bi bi-eye" id="eyeIcon"></i>
+                        </button>
+                    </div>
                     @error('password')
                         <div id="passwordHelp" class="form-text">{{ $message }}</div>
                     @enderror
@@ -73,6 +80,18 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous">
+    </script>
+    <script>
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const eyeIcon = document.getElementById('eyeIcon');
+
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            eyeIcon.classList.toggle('bi-eye');
+            eyeIcon.classList.toggle('bi-eye-slash');
+        });
     </script>
 </body>
 
