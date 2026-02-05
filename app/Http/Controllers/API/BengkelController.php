@@ -175,7 +175,8 @@ class BengkelController extends Controller
             'kecamatan',
             'kelurahan',
             'products',
-            'jadwals'
+            'jadwals',
+            'merkMobils'
         ])->find($id);
     
         if (!$bengkel) {
