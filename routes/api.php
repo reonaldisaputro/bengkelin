@@ -25,6 +25,7 @@ use App\Http\Controllers\API\SpecialistController;
 use App\Http\Controllers\API\CategoryController;
 use App\Http\Controllers\API\ForgotPasswordUserController;
 use App\Http\Controllers\API\ForgotPasswordOwnerController;
+use App\Http\Controllers\API\MerkMobilController;
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +64,10 @@ Route::get('/specialists/{id}', [SpecialistController::class, 'show']);
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/categories/{id}', [CategoryController::class, 'show']);
 Route::get('/categories/{id}/products', [CategoryController::class, 'products']);
+
+// Merk Mobil
+Route::get('/merk-mobil', [MerkMobilController::class, 'index']);
+Route::get('/merk-mobil/{id}', [MerkMobilController::class, 'show']);
 
 Route::prefix('service')->group(function () {
     Route::get('/', [ServiceController::class, 'index']);
