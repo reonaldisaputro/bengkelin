@@ -71,6 +71,7 @@ class BengkelController extends Controller
      * Query params:
      * - keyword: string (search by name, description, alamat)
      * - specialist_id: int (filter by specialist)
+     * - merk_mobil_id: int (filter by merk mobil)
      * - kecamatan_id: int (filter by kecamatan)
      * - kelurahan_id: int (filter by kelurahan)
      * - sort_by: string (name, created_at)
@@ -79,7 +80,7 @@ class BengkelController extends Controller
      */
     public function all(Request $request)
     {
-        $query = Bengkel::with(['specialists', 'kecamatan', 'kelurahan']);
+        $query = Bengkel::with(['specialists', 'kecamatan', 'kelurahan', 'merkMobils']);
 
         // Search by keyword (name, description, alamat)
         if ($request->filled('keyword')) {
@@ -96,6 +97,14 @@ class BengkelController extends Controller
             $specialistId = $request->query('specialist_id');
             $query->whereHas('specialists', function ($q) use ($specialistId) {
                 $q->where('specialists.id', $specialistId);
+            });
+        }
+
+        // Filter by merk mobil
+        if ($request->filled('merk_mobil_id')) {
+            $merkMobilId = $request->query('merk_mobil_id');
+            $query->whereHas('merkMobils', function ($q) use ($merkMobilId) {
+                $q->where('merk_mobils.id', $merkMobilId);
             });
         }
 
