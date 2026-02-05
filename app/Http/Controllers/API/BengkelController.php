@@ -138,9 +138,19 @@ class BengkelController extends Controller
     }
 
     // GET /api/bengkel
-    public function index()
+    public function index(Request $request)
     {
-        $bengkels = Bengkel::where('pemilik_id', Auth::id())->with('specialists')->get();
+        $query = Bengkel::where('pemilik_id', Auth::id())->with(['specialists', 'merkMobils']);
+
+        // Filter by merk mobil
+        if ($request->filled('merk_mobil_id')) {
+            $merkMobilId = $request->query('merk_mobil_id');
+            $query->whereHas('merkMobils', function ($q) use ($merkMobilId) {
+                $q->where('merk_mobils.id', $merkMobilId);
+            });
+        }
+
+        $bengkels = $query->get();
         return ResponseFormatter::success($bengkels, 'Data bengkel berhasil diambil');
     }
 
