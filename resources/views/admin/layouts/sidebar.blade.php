@@ -96,6 +96,16 @@
                 </li>
 
                 <li class="nav-item">
+                    <a href="{{ route('merk-mobil.index') }}" class="nav-link">
+                        <i class="nav-icon fas fa-car"></i>
+                        <p>
+                            Merk Mobil
+                            <i class="right fas fa-angle-left"></i>
+                        </p>
+                    </a>
+                </li>
+
+                <li class="nav-item">
                     <a href="{{ route('admin.pencairan') }}" class="nav-link">
                         <i class="nav-icon fas fa-users"></i>
                         <p>

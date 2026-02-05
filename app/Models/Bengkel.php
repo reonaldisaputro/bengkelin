@@ -77,4 +77,9 @@ class Bengkel extends Model
     {
         return $this->hasMany(WithdrawRequest::class);
     }
+
+    public function merkMobils()
+    {
+        return $this->belongsToMany(MerkMobil::class, 'bengkel_merk_mobil');
+    }
 }

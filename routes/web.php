@@ -14,6 +14,7 @@ use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JadwalController;
 use App\Http\Controllers\LayananController;
+use App\Http\Controllers\MerkMobilController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileUserController;
@@ -200,6 +201,16 @@ Route::middleware(['auth:admin'])->group(function () {
     Route::get('/admin-category/{id}/edit', [CategoryController::class, 'edit'])->name('admin.category.edit');
     Route::put('/admin-category/{id}', [CategoryController::class, 'update'])->name('admin.category.update');
     Route::delete('/admin-category/{id}', [CategoryController::class, 'destroy'])->name('admin.category.destroy');
+    // merk mobil
+    Route::resource('admin-merk-mobil', MerkMobilController::class)->names([
+        'index' => 'merk-mobil.index',
+        'create' => 'merk-mobil.create',
+        'store' => 'merk-mobil.store',
+        'show' => 'merk-mobil.show',
+        'edit' => 'merk-mobil.edit',
+        'update' => 'merk-mobil.update',
+        'destroy' => 'merk-mobil.destroy',
+    ]);
 });
 
 // BENGKEL
