@@ -300,4 +300,117 @@ class BengkelController extends Controller
         $kelurahans = Kelurahan::where('kecamatan_id', $kecamatan_id)->get();
         return ResponseFormatter::success($kelurahans, 'Daftar kelurahan berhasil diambil');
     }
+
+    /**
+     * Get merk mobil untuk bengkel tertentu
+     * GET /api/bengkel/{id}/merk-mobil
+     */
+    public function getMerkMobil($id)
+    {
+        $bengkel = Bengkel::with('merkMobils')->find($id);
+
+        if (!$bengkel) {
+            return ResponseFormatter::error(null, 'Bengkel tidak ditemukan', 404);
+        }
+
+        return ResponseFormatter::success($bengkel->merkMobils, 'Daftar merk mobil bengkel berhasil diambil');
+    }
+
+    /**
+     * Add merk mobil ke bengkel (hanya owner)
+     * POST /api/bengkel/{id}/merk-mobil
+     * Body: { merk_mobil_ids: [1, 2, 3] }
+     */
+    public function addMerkMobil(Request $request, $id)
+    {
+        $bengkel = Bengkel::find($id);
+
+        if (!$bengkel) {
+            return ResponseFormatter::error(null, 'Bengkel tidak ditemukan', 404);
+        }
+
+        // Cek apakah user yang login adalah owner dari bengkel ini
+        if ($bengkel->pemilik_id != Auth::id()) {
+            return ResponseFormatter::error(null, 'Anda tidak memiliki akses ke bengkel ini', 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'merk_mobil_ids' => 'required|array',
+            'merk_mobil_ids.*' => 'exists:merk_mobils,id',
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validasi gagal', 422);
+        }
+
+        // Attach merk mobil ke bengkel (tidak menghapus yang sudah ada)
+        $bengkel->merkMobils()->syncWithoutDetaching($request->merk_mobil_ids);
+
+        return ResponseFormatter::success(
+            $bengkel->load('merkMobils'), 
+            'Merk mobil berhasil ditambahkan ke bengkel'
+        );
+    }
+
+    /**
+     * Update merk mobil bengkel (replace all)
+     * PUT /api/bengkel/{id}/merk-mobil
+     * Body: { merk_mobil_ids: [1, 2, 3] }
+     */
+    public function updateMerkMobil(Request $request, $id)
+    {
+        $bengkel = Bengkel::find($id);
+
+        if (!$bengkel) {
+            return ResponseFormatter::error(null, 'Bengkel tidak ditemukan', 404);
+        }
+
+        // Cek apakah user yang login adalah owner dari bengkel ini
+        if ($bengkel->pemilik_id != Auth::id()) {
+            return ResponseFormatter::error(null, 'Anda tidak memiliki akses ke bengkel ini', 403);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'merk_mobil_ids' => 'required|array',
+            'merk_mobil_ids.*' => 'exists:merk_mobils,id',
+        ]);
+
+        if ($validator->fails()) {
+            return ResponseFormatter::error(['errors' => $validator->errors()], 'Validasi gagal', 422);
+        }
+
+        // Sync akan mengganti semua relasi yang ada
+        $bengkel->merkMobils()->sync($request->merk_mobil_ids);
+
+        return ResponseFormatter::success(
+            $bengkel->load('merkMobils'), 
+            'Merk mobil bengkel berhasil diupdate'
+        );
+    }
+
+    /**
+     * Remove merk mobil dari bengkel
+     * DELETE /api/bengkel/{id}/merk-mobil/{merkMobilId}
+     */
+    public function removeMerkMobil($id, $merkMobilId)
+    {
+        $bengkel = Bengkel::find($id);
+
+        if (!$bengkel) {
+            return ResponseFormatter::error(null, 'Bengkel tidak ditemukan', 404);
+        }
+
+        // Cek apakah user yang login adalah owner dari bengkel ini
+        if ($bengkel->pemilik_id != Auth::id()) {
+            return ResponseFormatter::error(null, 'Anda tidak memiliki akses ke bengkel ini', 403);
+        }
+
+        // Detach merk mobil dari bengkel
+        $bengkel->merkMobils()->detach($merkMobilId);
+
+        return ResponseFormatter::success(
+            $bengkel->load('merkMobils'), 
+            'Merk mobil berhasil dihapus dari bengkel'
+        );
+    }
 }

@@ -219,6 +219,12 @@ Route::middleware('auth:owner-api')->group(function () {
         Route::post('/', [BengkelController::class, 'store']);
         Route::put('/{id}', [BengkelController::class, 'update']);
         Route::delete('/{id}', [BengkelController::class, 'destroy']);
+        
+        // Merk Mobil Bengkel - Owner only
+        Route::get('/{id}/merk-mobil', [BengkelController::class, 'getMerkMobil']);
+        Route::post('/{id}/merk-mobil', [BengkelController::class, 'addMerkMobil']);
+        Route::put('/{id}/merk-mobil', [BengkelController::class, 'updateMerkMobil']);
+        Route::delete('/{id}/merk-mobil/{merkMobilId}', [BengkelController::class, 'removeMerkMobil']);
     });
 
     Route::prefix('jadwals')->group(function () {
