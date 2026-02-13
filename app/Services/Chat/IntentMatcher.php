@@ -51,15 +51,15 @@ class IntentMatcher
             'keywords' => [],
             'priority' => 2,
         ],
-        'status' => [
-            'patterns' => ['/^status\b/i', '/^pesanan\b/i', '/^transaksi\b/i', '/^order\b/i'],
-            'keywords' => ['status', 'pesanan', 'transaksi'],
-            'priority' => 2,
-        ],
         'status_specific' => [
             'patterns' => ['/\b(TRANS-\w+)\b/i'],
             'keywords' => [],
             'priority' => 1,
+        ],
+        'status' => [
+            'patterns' => ['/^status\b/i', '/^pesanan\b/i', '/^transaksi\b/i', '/^order\b/i'],
+            'keywords' => ['status', 'pesanan', 'transaksi'],
+            'priority' => 2,
         ],
         'rating' => [
             'patterns' => ['/^rating\b/i', '/^ulas\b/i', '/^review\b/i', '/^ulasan\b/i'],
