@@ -13,7 +13,8 @@ class StatusHandler
      */
     public function handle(User $user): array
     {
-        $activeTrx = Transaction::where('user_id', $user->id)
+        $activeTrx = Transaction::with('bengkel')
+            ->where('user_id', $user->id)
             ->whereIn('payment_status', ['pending', 'unpaid', 'processing'])
             ->latest()
             ->take(5)
@@ -28,8 +29,20 @@ class StatusHandler
                 ->build();
         }
 
+        // Build summary text with details for each transaction
+        $summaryText = "Anda memiliki {$activeTrx->count()} pesanan aktif:\n";
+        foreach ($activeTrx as $i => $trx) {
+            $no = $i + 1;
+            $bengkelName = $trx->bengkel?->name ?? '-';
+            $total = 'Rp ' . number_format($trx->grand_total, 0, ',', '.');
+            $summaryText .= "\n{$no}. *{$trx->transaction_code}*\n";
+            $summaryText .= "   🏪 {$bengkelName}\n";
+            $summaryText .= "   💳 {$trx->payment_status} | 💰 {$total}";
+        }
+        $summaryText .= "\n\nKetuk kode transaksi di bawah untuk detail lengkap:";
+
         $builder = ResponseBuilder::make()
-            ->text('Anda memiliki beberapa pesanan aktif:');
+            ->text($summaryText);
 
         // Add quick replies for each transaction
         foreach ($activeTrx as $trx) {
