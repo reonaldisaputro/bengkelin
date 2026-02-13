@@ -281,10 +281,21 @@ class ChatService
             return $this->nearbyHandler->handleWithCoords($user, (float) $latitude, (float) $longitude, (float) $radius);
         }
 
-        // Try product search if message looks like a search query
+        // Try product search if message matches "cari xxx" pattern
         $keyword = $this->productHandler->extractKeyword($message);
         if ($keyword) {
             return $this->productHandler->handleSearch($user, $keyword);
+        }
+
+        // Try direct product search - maybe user typed a product name directly
+        if (mb_strlen($message) >= 3) {
+            $products = \App\Models\Product::where('name', 'LIKE', '%' . $message . '%')
+                ->where('stock', '>', 0)
+                ->limit(1)
+                ->exists();
+            if ($products) {
+                return $this->productHandler->handleSearch($user, $message);
+            }
         }
 
         // Try FAQ search if message is a question
