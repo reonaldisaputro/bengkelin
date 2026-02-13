@@ -192,13 +192,17 @@ class CheckoutController extends Controller
         $fraud = $notification->fraud_status;
         $order_id = $notification->order_id;
 
-        $transaction = Transaction::findOrFail($order_id);
+        // order_id format: ORDER-{transaction_id}-{timestamp}
+        $parts = explode('-', $order_id);
+        $transactionId = $parts[1] ?? null;
+
+        $transaction = Transaction::findOrFail($transactionId);
 
         if ($status == 'capture') {
             $transaction->payment_status = $fraud === 'challenge' ? 'Pending' : 'Success';
         } elseif ($status == 'settlement') {
             $transaction->payment_status = 'Success';
-        } elseif (in_array($status, ['pending', 'deny', 'expire', 'cancel'])) {
+        } elseif (in_array($status, ['deny', 'expire', 'cancel'])) {
             $transaction->payment_status = 'Cancelled';
         }
 
